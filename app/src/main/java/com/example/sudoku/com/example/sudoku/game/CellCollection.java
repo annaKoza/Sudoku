@@ -407,11 +407,10 @@ public class CellCollection {
 
     public Cell[][] getPuzzle(int level) throws Exception {
         totalscore = 0;
-        Cell[][] result;
         boolean breakMe = false;
         do {
-            result = generateNewPuzzle(level);
-            if (result != null) {
+            boolean result = tryGenerateNewPuzzle(level);
+            if (result) {
                 switch (level) {
                     case 1: {
                         if (totalscore >= 42 & totalscore <= 48)
@@ -436,15 +435,14 @@ public class CellCollection {
                             breakMe = true;
                         break;
                     }
-
                 }
             }
         }
         while (!breakMe);
-        return result;
+        return cells;
     }
 
-    private Cell[][] generateNewPuzzle(int level) throws Exception {
+    private boolean tryGenerateNewPuzzle(int level) throws Exception {
 
         cells_backup = new Cell[GridSettings.GRID_SIZE][GridSettings.GRID_SIZE];
 
@@ -457,7 +455,7 @@ public class CellCollection {
             if (!solvePuzzle())
                 solvePuzzleByBruteForce();
         } catch (Exception ex) {
-            return null;
+            return false;
         }
 
         for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
@@ -474,9 +472,9 @@ public class CellCollection {
         if(hasSolution)
         {
             reloadCells();
-            return cells;
+            return true;
         }
-        return null;
+        return false;
     }
 
     private boolean verifyIsOnlyOneSolution(int level)
