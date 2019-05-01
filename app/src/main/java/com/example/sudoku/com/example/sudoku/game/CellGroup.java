@@ -1,8 +1,5 @@
 package com.example.sudoku.com.example.sudoku.game;
 
-import com.example.sudoku.com.example.sudoku.game.Cell;
-import com.example.sudoku.com.example.sudoku.game.GridSettings;
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,38 +21,26 @@ public class CellGroup {
         return cells;
     }
 
-    public Cell getCellOnPosition(int c, int r)
+    public boolean validate(boolean takeEmptyIntoAccount)
     {
-        for(Cell cell: cells)
-        {
-            int[] position = cell.getPosition();
-            if(position[0] == c && position[1] == r)
-                return cell;
-        }
-        return null;
-    }
-
-    public boolean validate()
-    {
-        boolean valid = true;
+        int repetitionNumber = 0;
         Map<Integer, Cell> cellsByValue = new HashMap<>();
         for (int i = 0; i < cells.length; i++) {
             Cell cell = cells[i];
             int value = cell.getValue();
-            if(value == 0)
+            if (cellsByValue.get(value) != null)
             {
-                valid = false;
-            }
-            else if (cellsByValue.get(value) != null) {
                 cells[i].setValid(false);
                 cellsByValue.get(value).setValid(false);
-                valid = false;
+                if(!takeEmptyIntoAccount && value == 0)
+                    continue;
+                repetitionNumber++;
             }
             else {
                 cellsByValue.put(value, cell);
             }
-        }
-        return valid;
-    }
 
+        }
+        return repetitionNumber == 0;
+    }
 }

@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.example.sudoku.GameActivity" >
+    tools:context=".SolveActivity" >
 
     <com.example.sudoku.view.sudokuGrid.SudokuGridView
         android:id="@+id/sudokuGridView"
@@ -26,16 +26,9 @@
         android:orientation="vertical">
 
         <Button
-            android:id="@+id/resetButton"
+            android:id="@+id/solve_grid_Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/reset_board" />
-        <Button
-            android:id="@+id/checkButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/check_board" />
+            android:text="@string/solve_board" />
     </LinearLayout>
-
-
 </RelativeLayout>

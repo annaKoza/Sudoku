@@ -16,7 +16,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         Button startGameButton = findViewById(R.id.start_button);
         startGameButton.setOnClickListener(this);
-
+        Button solveButton = findViewById(R.id.solve_button);
+        solveButton.setOnClickListener(this);
     }
 
     @Override
@@ -30,7 +31,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -44,10 +44,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId())
         {
             case R.id.start_button:
-                Intent intent1 = new Intent(this, GameActivity.class);
-                startActivity(intent1);
+                Intent startGameIntent = new Intent(this, LevelActivity.class);
+                startActivity(startGameIntent);
                 break;
-
+            case R.id.solve_button:
+                Intent solveIntent = new Intent(this, SolveActivity.class);
+                startActivity(solveIntent);
+                break;
                 default:
                     break;
         }

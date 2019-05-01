@@ -2,6 +2,7 @@ package com.example.sudoku.com.example.sudoku.game;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 
@@ -178,5 +179,11 @@ public class Cell implements Cloneable {
     public void CopyCell(Cell cell) {
         value = cell.value;
         possibleValues = new ArrayList<>(cell.possibleValues);
+    }
+    public List<Integer> getRandomizedPossibleValues()
+    {
+        List<Integer> randomValues = new ArrayList<>(possibleValues);
+        Collections.shuffle(randomValues);
+        return randomValues;
     }
 }

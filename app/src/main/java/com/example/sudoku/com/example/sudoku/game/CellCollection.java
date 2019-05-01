@@ -1,14 +1,36 @@
 package com.example.sudoku.com.example.sudoku.game;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+class CoordinatesList {
+    private HashMap<String, int[]> coordinates;
+
+    public CoordinatesList() {
+        coordinates = new HashMap<>();
+    }
+
+    public void addCoordinate(int r, int c) {
+        String value = String.format("%d%d", r, c);
+        coordinates.putIfAbsent(value, new int[]{r, c});
+    }
+
+    public boolean removeCoordinate(int r, int c) {
+        String value = String.format("%d%d", r, c);
+        if (!coordinates.containsKey(value))
+            return false;
+        coordinates.remove(value);
+        return true;
+    }
+
+    public boolean contains(int r, int c) {
+        return coordinates.containsKey(String.format("%d%d", r, c));
+    }
+}
+
 public class CellCollection {
 
-    // ==================================================
-    // Solve puzzle by brute force
-    // ==================================================
     boolean bruteForceStop = false;
     private Cell[][] cells;
     private CellGroup[] rows;
@@ -16,27 +38,31 @@ public class CellCollection {
     private CellGroup[] sectors;
     private int totalscore;
     private Cell[][] cells_backup;
-    private Cell[][] empty_cells_backup;
+    private CoordinatesList emptyCellsCoordinates;
 
-    private CellCollection()
-    {
-        empty_cells_backup = new Cell[GridSettings.GRID_SIZE][GridSettings.GRID_SIZE];
+    private CellCollection() {
+        InitializeCollection();
+    }
+
+    public static CellCollection createEmptyGrid() {
+        return new CellCollection();
+    }
+
+    private void InitializeCollection() {
+        emptyCellsCoordinates = new CoordinatesList();
         cells_backup = new Cell[GridSettings.GRID_SIZE][GridSettings.GRID_SIZE];
         cells = new Cell[GridSettings.GRID_SIZE][GridSettings.GRID_SIZE];
         rows = new CellGroup[GridSettings.GRID_SIZE];
         columns = new CellGroup[GridSettings.GRID_SIZE];
         sectors = new CellGroup[GridSettings.GRID_SIZE];
-        for(int i=0;i< GridSettings.GRID_SIZE;i++)
-        {
+        for (int i = 0; i < GridSettings.GRID_SIZE; i++) {
             rows[i] = new CellGroup();
             columns[i] = new CellGroup();
             sectors[i] = new CellGroup();
         }
 
-        for (int r=0; r<GridSettings.GRID_SIZE;r++)
-        {
-            for(int c=0; c<GridSettings.GRID_SIZE;c++)
-            {
+        for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
+            for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
                 cells[r][c] = new Cell(
                         c,
                         r, rows[r], columns[c], sectors[((c / 3) * 3) + (r / 3)]);
@@ -48,33 +74,18 @@ public class CellCollection {
         }
     }
 
-    public static CellCollection createEmptyGrid()
-    {
-        return new CellCollection();
-    }
-
-    // ==================================================
-    // Calculates the possible values for all the cell
-    // ==================================================
     private boolean checkColumnsAndRows() throws Exception {
         boolean changes = false;
-        for (int row = 0;row < 9;row++)
-        {
-            for (int col = 0;col < 9;col++)
-            {
-                if (cells[row][col].getValue() == 0)
-                {
-                    try
-                    {
+        for (int row = 0; row < GridSettings.GRID_SIZE; row++) {
+            for (int col = 0; col < GridSettings.GRID_SIZE; col++) {
+                if (cells[row][col].getValue() == 0) {
+                    try {
                         cells[row][col].calculatePossibleValues();
-                    }
-                    catch (Exception ex)
-                    {
+                    } catch (Exception ex) {
                         throw new Exception(ex.getMessage());
                     }
 
-                    if(cells[row][col].updateValueIfReady())
-                    {
+                    if (cells[row][col].updateValueIfReady()) {
                         changes = true;
                         totalscore += 1;
                     }
@@ -84,20 +95,15 @@ public class CellCollection {
         return changes;
     }
 
-    // =========================================================
-    // Look for Lone Rangers in Groups
-    // =========================================================
     private boolean lookForLoneRangersInGroups(CellGroup[] group) {
         boolean changes = false;
         int occurrence;
         Cell cellToChange = null;
 
-        for (CellGroup row: group)
-        {
-            for (int n = 1;n <= 9;n++)
-            {
+        for (CellGroup row : group) {
+            for (int n = 1; n <= GridSettings.GRID_SIZE; n++) {
                 occurrence = 0;
-                for (Cell cell: row.getCells()) {
+                for (Cell cell : row.getCells()) {
 
                     if (cell.getValue() == 0 && cell.checkIfContainsPossibleValue(n)) {
                         occurrence += 1;
@@ -119,45 +125,25 @@ public class CellCollection {
         return changes;
     }
 
-    // ==================================================
-    // Look for Twins in Groups
-    // ==================================================
     private boolean lookForTwinsInGroups(CellGroup[] groups) throws Exception {
         boolean changes = false;
 
-        for (CellGroup row: groups)
-        {
+        for (CellGroup row : groups) {
             Cell[] cells = row.getCells();
-            for (Cell cell: cells)
-            {
-                // ---for each row, check each column in the row---
-                if (cell.getValue() == 0 && cell.getPossiblevaluesCount() == 2)
-                {
-                    for (Cell cellTwo: cells)
-                    {
-                        if (cell != cellTwo && cellTwo.checkIfPossibleValueListIsTheSame(cell.getPossibleValues()))
-                        {
-                            for (Cell cellThird: cells)
-                            {
-                                if (cellThird.getValue() == 0 && cellThird != cell && cellThird != cellTwo)
-                                {
+            for (Cell cell : cells) {
+                if (cell.getValue() == 0 && cell.getPossiblevaluesCount() == 2) {
+                    for (Cell cellTwo : cells) {
+                        if (cell != cellTwo && cellTwo.checkIfPossibleValueListIsTheSame(cell.getPossibleValues())) {
+                            for (Cell cellThird : cells) {
+                                if (cellThird.getValue() == 0 && cellThird != cell && cellThird != cellTwo) {
 
-                                    if(cellThird.getPossibleValues().removeAll(cell.getPossibleValues()))
-                                    {
+                                    if (cellThird.getPossibleValues().removeAll(cell.getPossibleValues())) {
                                         changes = true;
                                     }
-                                    // ---if possible value reduces to
-                                    // empty string, then the user has
-                                    // placed a move that results in
-                                    // the puzzle not solvable---
                                     if (cellThird.getPossiblevaluesCount() == 0)
                                         throw new Exception("Invalid Move twins in rows");
 
-                                    // ---if left with 1 possible value
-                                    // for the current cell, cell is
-                                    // confirmed---
-                                    if (cellThird.updateValueIfReady())
-                                    {
+                                    if (cellThird.updateValueIfReady()) {
                                         totalscore += 3;
                                     }
                                 }
@@ -173,24 +159,16 @@ public class CellCollection {
         return changes;
     }
 
-    // ==================================================
-    // Look for Triplets in Groups
-    // ==================================================
     private boolean lookForTripletsInGroups(CellGroup[] groups) throws Exception {
         boolean changes = false;
-        for (CellGroup column: groups)
-        {
+        for (CellGroup column : groups) {
             Cell[] columnCells = column.getCells();
-            for (Cell cell: columnCells)
-            {
-                if (cell.getValue() == 0 && cell.getPossiblevaluesCount() == 3)
-                {
+            for (Cell cell : columnCells) {
+                if (cell.getValue() == 0 && cell.getPossiblevaluesCount() == 3) {
                     List<Cell> selectedCells = new ArrayList<>();
                     selectedCells.add(cell);
 
-                    // ---scan by mini-grid---
-                    for(Cell cellSecond: columnCells)
-                    {
+                    for (Cell cellSecond : columnCells) {
                         if (cell != cellSecond
                                 && (cell.checkIfPossibleValueListIsTheSame(cellSecond.getPossibleValues())
                                 || cellSecond.getPossiblevaluesCount() == 2
@@ -199,33 +177,20 @@ public class CellCollection {
                             selectedCells.add(cellSecond);
                     }
 
-                    // --found 3 cells as triplets; remove all from the other cells---
-                    if (selectedCells.size() == 3)
-                    {
-                        for (Cell cellThird: columnCells)
-                        {
+                    if (selectedCells.size() == 3) {
+                        for (Cell cellThird : columnCells) {
                             if (cellThird.getValue() == 0
                                     && cellThird != selectedCells.get(0)
                                     && cellThird != selectedCells.get(1)
                                     && cellThird != selectedCells.get(2)
-                            )
-                            {
-                                if(cellThird.getPossibleValues().removeAll(cell.getPossibleValues()))
-                                {
+                            ) {
+                                if (cellThird.getPossibleValues().removeAll(cell.getPossibleValues())) {
                                     changes = true;
                                 }
-                                // ---if possible value reduces to
-                                // empty string, then the user has
-                                // placed a move that results in
-                                // the puzzle not solvable---
                                 if (cellThird.getPossiblevaluesCount() == 0)
                                     throw new Exception("Invalid Move triplates in columns");
 
-                                // ---if left with 1 possible value
-                                // for the current cell, cell is
-                                // confirmed---
-                                if (cellThird.updateValueIfReady())
-                                {
+                                if (cellThird.updateValueIfReady()) {
                                     totalscore += 4;
                                 }
                             }
@@ -239,39 +204,24 @@ public class CellCollection {
         return changes;
     }
 
-    // ==================================================
-    // Steps to solve the puzzle
-    // ==================================================
     private boolean solvePuzzle() throws Exception {
         boolean changes;
         boolean ExitLoop = false;
-        try
-        {
-            do
-            {
-                do
-                {
-                    do
-                    {
-                        do
-                        {
-                            do
-                            {
-                                do
-                                {
-                                    do
-                                    {
-                                        do
-                                        {
-                                            do
-                                            {
-                                                do
-                                                {
+        try {
+            do {
+                do {
+                    do {
+                        do {
+                            do {
+                                do {
+                                    do {
+                                        do {
+                                            do {
+                                                do {
                                                     // Minigrid Elimination---
                                                     changes = checkColumnsAndRows();
 
-                                                    if (isPuzzleSolved())
-                                                    {
+                                                    if (isPuzzleSolved()) {
                                                         ExitLoop = true;
                                                         break;
                                                     }
@@ -283,8 +233,7 @@ public class CellCollection {
                                                 // ---Look for Lone Rangers in Minigrids---
                                                 changes = lookForLoneRangersInGroups(sectors);
 
-                                                if (isPuzzleSolved())
-                                                {
+                                                if (isPuzzleSolved()) {
                                                     ExitLoop = true;
                                                     break;
                                                 }
@@ -296,8 +245,7 @@ public class CellCollection {
                                             // ---Look for Lone Rangers in Rows---
                                             changes = lookForLoneRangersInGroups(rows);
 
-                                            if (isPuzzleSolved())
-                                            {
+                                            if (isPuzzleSolved()) {
                                                 ExitLoop = true;
                                                 break;
                                             }
@@ -309,8 +257,7 @@ public class CellCollection {
                                         // ---Look for Lone Rangers in Columns---
                                         changes = lookForLoneRangersInGroups(columns);
 
-                                        if (isPuzzleSolved())
-                                        {
+                                        if (isPuzzleSolved()) {
                                             ExitLoop = true;
                                             break;
                                         }
@@ -322,8 +269,7 @@ public class CellCollection {
                                     // ---Look for Twins in Minigrids---
                                     changes = lookForTwinsInGroups(sectors);
 
-                                    if (isPuzzleSolved())
-                                    {
+                                    if (isPuzzleSolved()) {
                                         ExitLoop = true;
                                         break;
                                     }
@@ -335,8 +281,7 @@ public class CellCollection {
                                 // ---Look for Twins in Rows---
                                 changes = lookForTwinsInGroups(rows);
 
-                                if (isPuzzleSolved())
-                                {
+                                if (isPuzzleSolved()) {
                                     ExitLoop = true;
                                     break;
                                 }
@@ -349,8 +294,7 @@ public class CellCollection {
                             // ---Look for Twins in Columns---
                             changes = lookForTwinsInGroups(columns);
 
-                            if (isPuzzleSolved())
-                            {
+                            if (isPuzzleSolved()) {
                                 ExitLoop = true;
                                 break;
                             }
@@ -363,8 +307,7 @@ public class CellCollection {
                         // ---Look for Triplets in Minigrids---
                         changes = lookForTripletsInGroups(sectors);
 
-                        if (isPuzzleSolved())
-                        {
+                        if (isPuzzleSolved()) {
                             ExitLoop = true;
                             break;
                         }
@@ -377,8 +320,7 @@ public class CellCollection {
                     // ---Look for Triplets in Rows---
                     changes = lookForTripletsInGroups(rows);
 
-                    if (isPuzzleSolved())
-                    {
+                    if (isPuzzleSolved()) {
                         ExitLoop = true;
                         break;
                     }
@@ -391,25 +333,20 @@ public class CellCollection {
                 // ---Look for Triplets in Columns---
                 changes = lookForTripletsInGroups(columns);
 
-                if (isPuzzleSolved())
-                {
-                    ExitLoop = true;
+                if (isPuzzleSolved()) {
                     break;
                 }
 
             }
             while (changes);
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.getMessage(),ex);
+        } catch (Exception ex) {
+            throw new Exception(ex.getMessage(), ex);
         }
 
         if (isPuzzleSolved()) {
 
             return true;
-        }
-        else
+        } else
             return false;
     }
 
@@ -417,44 +354,29 @@ public class CellCollection {
         totalscore += 5;
         Cell cell = findCellWithFewestPossibleValues();
 
-        List<Integer> possibleValues = randomizeThePossibleValues(cell.getPossibleValues());
+        List<Integer> possibleValues = cell.getRandomizedPossibleValues();
         // ---save cells state---
-        for (int c = 0;c < GridSettings.GRID_SIZE;c++)
-        {
-            for (int r = 0;r< GridSettings.GRID_SIZE;r++)
-            {
+        for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
+            for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
                 cells[r][c].SaveState();
             }
         }
 
-
-        for (int i = 0;i < possibleValues.size();i++)
-        {
-            // ---select one value and try---
+        for (int i = 0; i < possibleValues.size(); i++) {
             cell.setValue(possibleValues.get(i));
-            try
-            {
-                if (solvePuzzle())
-                {
-                    // ---if the puzzle is solved, the recursion can stop now---
+            try {
+                if (solvePuzzle()) {
                     bruteForceStop = true;
-                    return ;
-                }
-                else
-                {
-                    // ---no problem with current selection, proceed with next cell---
+                    return;
+                } else {
                     solvePuzzleByBruteForce();
                     if (bruteForceStop)
                         return;
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 totalscore += 5;
-                for (int c = 0;c < GridSettings.GRID_SIZE;c++)
-                {
-                    for (int r = 0;r< GridSettings.GRID_SIZE;r++)
-                    {
+                for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
+                    for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
                         cells[r][c].LoadState();
                     }
                 }
@@ -462,40 +384,22 @@ public class CellCollection {
         }
     }
 
-    // =========================================================
-    // Find the cell with the small number of possible values
-    // =========================================================
+
     private Cell findCellWithFewestPossibleValues() {
         Cell cell = null;
         int min = 10;
-        for (int r = 0;r < 9;r++)
-        {
-            for (int c = 0;c < 9;c++)
-            {
-                if (cells[r][c].getValue() == 0 && cells[r][c].getPossiblevaluesCount() < min)
-                {
+        for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
+            for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
+                if (cells[r][c].getValue() == 0 && cells[r][c].getPossiblevaluesCount() < min) {
                     min = cells[r][c].getPossiblevaluesCount();
                     cell = cells[r][c];
                 }
-
             }
         }
         return cell;
     }
 
-    // =========================================================
-    // Randomly swap the list of possible values
-    // =========================================================
-    private List<Integer> randomizeThePossibleValues(List<Integer> values) {
 
-        List<Integer> randomValues = new ArrayList<>(values);
-        Collections.shuffle(randomValues);
-        return randomValues;
-    }
-
-    // ============================================================
-    // Generate a random number between the specified range
-    // ============================================================
     private int randomNumber(int min, int max) {
         Random r = new Random();
         return r.nextInt((max - min) + 1) + min;
@@ -508,38 +412,29 @@ public class CellCollection {
         totalscore = 0;
         Cell[][] result;
         boolean breakMe = false;
-        do
-        {
+        do {
             result = generateNewPuzzle(level);
-
-            if (result != null)
-            {
-                // ---check if puzzle matches the level of difficult---
-                switch(level)
-                {
-                    case 1:
-                    {
-                        if (totalscore >= 42 & totalscore <= 46)
+            if (result != null) {
+                switch (level) {
+                    case 1: {
+                        if (totalscore >= 42 & totalscore <= 48)
                             breakMe = true;
 
                         break;
                     }
-                    case 2:
-                    {
-                        if (totalscore >= 49 & totalscore <= 53)
+                    case 2: {
+                        if (totalscore >= 49 & totalscore <= 55)
                             breakMe = true;
 
                         break;
                     }
-                    case 3:
-                    {
-                        if (totalscore >= 56 & totalscore <= 60)
+                    case 3: {
+                        if (totalscore >= 56 & totalscore <= 111)
                             breakMe = true;
 
                         break;
                     }
-                    case 4:
-                    {
+                    case 4: {
                         if (totalscore >= 112 & totalscore <= 116)
                             breakMe = true;
                         break;
@@ -547,167 +442,152 @@ public class CellCollection {
 
                 }
             }
-
         }
         while (!breakMe);
         return result;
     }
 
-    // ============================================================
-    // Generate a new Sudoku puzzle
-    // ============================================================
     private Cell[][] generateNewPuzzle(int level) throws Exception {
 
-        cells_backup = new Cell[9][9];
+        cells_backup = new Cell[GridSettings.GRID_SIZE][GridSettings.GRID_SIZE];
 
-        for (Cell[] row: cells)
-        {
-            for(Cell element: row )
+        for (Cell[] row : cells) {
+            for (Cell element : row)
                 element.ResetCell();
         }
 
-        try
-        {
+        try {
             if (!solvePuzzle())
                 solvePuzzleByBruteForce();
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             return null;
         }
 
-        for (int r = 0;r < 9;r++)
-        {
-            for (int c = 0;c < 9;c++)
-            {
-                cells_backup[r][c] = (Cell)cells[r][c].clone();
+        for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
+            for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
+                cells_backup[r][c] = (Cell) cells[r][c].clone();
                 cells[r][c].ClearHistory();
             }
         }
 
-        empty_cells_backup = initializeEmptyCells(cells, level);
+        emptyCellsCoordinates = initializeEmptyCells(cells, level);
         bruteForceStop = false;
 
-        // ---verify the puzzle has only one solution---
-        int tries = 0;
-        do
+        boolean hasSolution = verifyIsOnlyOneSolution(level);
+        if(hasSolution)
         {
+            reloadCells();
+            return cells;
+        }
+        return null;
+    }
+
+    private boolean verifyIsOnlyOneSolution(int level)
+    {
+        int tries = 0;
+        do {
             totalscore = 0;
-            try
-            {
-                if (!solvePuzzle())
-                {
-                    // ---if puzzle is not solved and this is a level 1 to 3 puzzle---
-                    if (level < 4)
-                    {
-                        // ---choose another pair of cells to empty---
-                        vacateAnotherPairOfCells(empty_cells_backup, cells_backup);
+            try {
+                if (!solvePuzzle()) {
+                    if (level < 3) {
+                        vacateAnotherPairOfCells(cells_backup);
                         tries += 1;
-                    }
-                    else
-                    {
-                        // ---level 4 puzzles does not guarantee single solution and potentially need guessing---
+                    } else {
+                        //level 3,4 puzzles does not guarantee single solution and potentially need guessing
                         solvePuzzleByBruteForce();
                         break;
                     }
-                }
-                else
+                } else
                     break;
 
-            }
-            catch (Exception ex)
-            {
-                return null;
+            } catch (Exception ex) {
+                return false;
             }
 
-            // ---if too many tries, exit the loop---
             if (tries > 50)
-                return null;
+                return false;
         }
         while (true);
 
-        return empty_cells_backup;
+        return true;
     }
-
-    private Cell[][] initializeEmptyCells(Cell[][] cells, int level) throws CloneNotSupportedException {
-
-        int numberofemptycells = 0;
-        Cell[][] bakupCells = new Cell[9][9];
-        // ---set the number of empty cells based on the level of difficulty---
-        switch(level)
+    private void reloadCells()
+    {
+        for (int r =0;r<GridSettings.GRID_SIZE;r++)
         {
-            case 1:
-            {
-                numberofemptycells = randomNumber(40,45);
-                break;
-            }
-            case 2:
-            {
-                numberofemptycells = randomNumber(46,49);
-                break;
-            }
-            case 3:
-            {
-                numberofemptycells = randomNumber(50,53);
-                break;
-            }
-            case 4:
-            {
-                numberofemptycells = randomNumber(54,58);
-                break;
-            }
-        }
-
-        createEmptyCells(numberofemptycells);
-        for (int r = 0;r < 9;r++)
-        {
-            for (int c = 0;c < 9;c++)
-            {
-                bakupCells[r][c] = (Cell)cells[r][c].clone();
-            }
-        }
-        return bakupCells;
-    }
-
-    // ============================================================
-    // Create empty cells in the grid
-    // ============================================================
-    private void createEmptyCells(int empty) {
-        int c , r ;
-        // ----choose random locations for empty cells----
-        Cell[] emptyCells = new Cell[empty+1];
-        for (int i = 0; i <= empty / 2 +1; i++)
-        {
-            boolean duplicate ;
-            do
-            {
-                duplicate = false;
-                do
-                {
-                    c = randomNumber(0,8);
-                    r = randomNumber(0,4);
+            for(int c=0;c<GridSettings.GRID_SIZE;c++) {
+                if(emptyCellsCoordinates.contains(r,c)) {
+                    cells[r][c].setValue(0);
+                    cells[r][c].setEditable(true);
                 }
-                // ---get a cell in the first half of the grid
+                else
+                    cells[r][c].setEditable(false);
+            }
+        }
+    }
+
+    private CoordinatesList initializeEmptyCells(Cell[][] cells, int level) throws CloneNotSupportedException {
+
+        int numberOfEmptyCells = 0;
+        CoordinatesList emptyCells = new CoordinatesList();
+        switch (level) {
+            case 1: {
+                numberOfEmptyCells = randomNumber(40, 45);
+                break;
+            }
+            case 2: {
+                numberOfEmptyCells = randomNumber(46, 49);
+                break;
+            }
+            case 3: {
+                numberOfEmptyCells = randomNumber(50, 53);
+                break;
+            }
+            case 4: {
+                numberOfEmptyCells = randomNumber(54, 58);
+                break;
+            }
+        }
+
+        createEmptyCells(numberOfEmptyCells);
+        for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
+            for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
+                if (cells[r][c].getValue() == 0)
+                    emptyCells.addCoordinate(r, c);
+            }
+        }
+        return emptyCells;
+    }
+
+    private void createEmptyCells(int empty) {
+        int c, r;
+        Cell[] emptyCells = new Cell[empty + 1];
+        for (int i = 0; i <= empty / 2 + 1; i++) {
+            boolean duplicate;
+            do {
+                duplicate = false;
+                do {
+                    c = randomNumber(0, 8);
+                    r = randomNumber(0, 4);
+                }
+
+                // get a cell in the first half of the grid
                 while (r == 4 && c > 4);
                 Cell cellToAdd = cells[r][c];
 
-                for (int j = 0; j < i; j++)
-                {
-                    // ---if cell is already selected to be empty
-                    if (emptyCells[j] == cellToAdd)
-                    {
+                for (int j = 0; j < i; j++) {
+                    if (emptyCells[j] == cellToAdd) {
                         duplicate = true;
                         break;
                     }
                 }
                 if (!duplicate)
                 {
-                    // ---set the empty cell---
                     emptyCells[i] = cellToAdd;
                     cellToAdd.setValue(0);
                     cellToAdd.getPossibleValues().clear();
 
-                    // ---reflect the top half of the grid and make it symmetrical---
+                    // reflect the top half of the grid and make it symmetrical
                     emptyCells[empty - i] = cells[8 - r][8 - c];
                     cells[8 - r][8 - c].setValue(0);
                     cells[8 - r][8 - c].getPossibleValues().clear();
@@ -717,46 +597,34 @@ public class CellCollection {
         }
     }
 
-    // ============================================================
-    // Vacate another pair of cells
-    // ============================================================
-    private void vacateAnotherPairOfCells(Cell[][] emptyCellsBackup, Cell[][] solvedCellsBackup) throws Exception {
+    private void vacateAnotherPairOfCells(Cell[][] solvedCellsBackup) throws Exception {
         int c, r;
 
         do {
-            // ---look for a pair of cells to restore---
             c = randomNumber(0, 8);
             r = randomNumber(0, 8);
         }
-        while (emptyCellsBackup[r][c].getValue() !=0);
+        while (!emptyCellsCoordinates.contains(r, c));
 
-        Cell cell = solvedCellsBackup[r][c];
-        Cell mirrorCell = solvedCellsBackup[8 - r][8 - c];
-        emptyCellsBackup[r][c].CopyCell(cell);
-        emptyCellsBackup[8 - r][8 - c].CopyCell(mirrorCell);
+        emptyCellsCoordinates.removeCoordinate(r, c);
+        emptyCellsCoordinates.removeCoordinate(8 - r, 8 - c);
 
         do {
-            // ---look for another pair of cells to vacate---
             c = randomNumber(0, 8);
             r = randomNumber(0, 8);
         }
-        while (emptyCellsBackup[r][c].getValue() == 0);
-        // ---remove the cell from the str---
-        emptyCellsBackup[r][c].setValue(0);
-        emptyCellsBackup[8 - r][8 - c].setValue(0);
+        while (emptyCellsCoordinates.contains(r, c));
 
-        for (int row = 0; row < 9; row++)
-        {
-            for (int col = 0; col < 9; col++)
-            {
-                if (emptyCellsBackup[row][col].getValue() != 0)
-                {
+        emptyCellsCoordinates.addCoordinate(r, c);
+        emptyCellsCoordinates.addCoordinate(8 - r, 8 - c);
+
+        for (int row = 0; row < GridSettings.GRID_SIZE; row++) {
+            for (int col = 0; col < GridSettings.GRID_SIZE; col++) {
+                if (!emptyCellsCoordinates.contains(row, col)) {
                     cells[row][col].getPossibleValues().clear();
-                    cells[row][col].setValue(emptyCellsBackup[row][col].getValue());
-                    cells[row][col].getPossibleValues().add(cells[row][col].getValue());
-                }
-                else
-                {
+                    cells[row][col].setValue(solvedCellsBackup[row][col].getValue());
+                    cells[row][col].getPossibleValues().add(solvedCellsBackup[row][col].getValue());
+                } else {
                     cells[row][col].getPossibleValues().clear();
                     cells[row][col].setValue(0);
                 }
@@ -766,22 +634,29 @@ public class CellCollection {
 
     public boolean isPuzzleSolved()
     {
+       return isPuzzleSolved(true);
+    }
+    public boolean isPuzzleSolvable()
+    {
+     return isPuzzleSolved(false);
+    }
+    private boolean isPuzzleSolved(boolean takeEmptyCellsIntoAccount) {
         boolean valid = true;
 
         markAllCellsAsValid();
 
         for (CellGroup row : rows) {
-            if (!row.validate()) {
+            if (!row.validate(takeEmptyCellsIntoAccount)) {
                 valid = false;
             }
         }
         for (CellGroup column : columns) {
-            if (!column.validate()) {
+            if (!column.validate(takeEmptyCellsIntoAccount)) {
                 valid = false;
             }
         }
         for (CellGroup sector : sectors) {
-            if (!sector.validate()) {
+            if (!sector.validate(takeEmptyCellsIntoAccount)) {
                 valid = false;
             }
         }
@@ -789,12 +664,47 @@ public class CellCollection {
     }
 
     private void markAllCellsAsValid() {
-        for(int c=0;c<GridSettings.GRID_SIZE;c++)
-        {
-            for (int r=0;r<GridSettings.GRID_SIZE;r++)
-            {
+        for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
+            for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
                 cells[r][c].setValid(true);
             }
         }
+    }
+    public Cell[][] getCells()
+    {
+        return cells;
+    }
+    public Cell getCellOnPosition(int r, int c)
+    {
+        if(r<GridSettings.GRID_SIZE && c <GridSettings.GRID_SIZE)
+            return cells[r][c];
+        else
+            throw new IllegalArgumentException("out of Sudoku grid bound");
+    }
+
+    public boolean solveEmpty() {
+        try {
+            if (solvePuzzle()) {
+                bruteForceStop = true;
+                return true;
+            } else {
+                solvePuzzleByBruteForce();
+                if (bruteForceStop)
+                    return true;
+            }
+        } catch (Exception ex) {
+           return false;
+        }
+        return false;
+    }
+
+    public Cell[][] resetPuzzle() {
+        for (int r =0;r<GridSettings.GRID_SIZE;r++) {
+            for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
+                cells[r][c] = cells_backup[r][c];
+                reloadCells();
+            }
+        }
+        return  cells;
     }
 }
