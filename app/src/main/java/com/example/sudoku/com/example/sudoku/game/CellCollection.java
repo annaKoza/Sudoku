@@ -405,9 +405,6 @@ public class CellCollection {
         return r.nextInt((max - min) + 1) + min;
     }
 
-    // ============================================================
-    // Get Puzzle
-    // ============================================================
     public Cell[][] getPuzzle(int level) throws Exception {
         totalscore = 0;
         Cell[][] result;

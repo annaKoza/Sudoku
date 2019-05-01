@@ -19,7 +19,6 @@ public class SudokuGridView extends GridView{
 		super(context,attrs);
 		
 		this.context = context;
-		
 		SudokuGridViewAdapter gridViewAdapter = new SudokuGridViewAdapter(context);
 		setAdapter(gridViewAdapter);
 		setOnItemClickListener(new OnItemClickListener() {
@@ -32,7 +31,7 @@ public class SudokuGridView extends GridView{
 			}
 		});
 	}
-	
+
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		super.onMeasure(widthMeasureSpec, widthMeasureSpec);

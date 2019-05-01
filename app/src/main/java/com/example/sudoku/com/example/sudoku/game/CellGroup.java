@@ -41,6 +41,7 @@ public class CellGroup {
             }
 
         }
+        if(cellsByValue.containsKey(0) && takeEmptyIntoAccount) repetitionNumber++;
         return repetitionNumber == 0;
     }
 }

@@ -1,6 +1,5 @@
 package com.example.sudoku.view.ButtonsGrid;
 
-
 import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
@@ -13,8 +12,7 @@ import android.widget.GridView;
 import com.example.sudoku.R;
 
 public class ButtonsGridView extends GridView{
-	
-	
+
 	public ButtonsGridView( Context context , AttributeSet attrs ){
 		super(context , attrs);
 		

@@ -58,6 +58,7 @@ public class GameEngine {
 	public void setSelectedPosition( int x , int y ){
 		selectedPosX = x;
 		selectedPosY = y;
+		grid.setItemSelected(selectedPosX,selectedPosY);
 	}
 	
 	public void setNumber( int number ){
@@ -71,11 +72,6 @@ public class GameEngine {
     {
         return model.isPuzzleSolved();
     }
-	public  boolean checkCurrentState()
-	{
-		return true;
-	//	return model.validateCurrentGrid();
-	}
     public void resetGame() {
         grid.setGrid(model.resetPuzzle());
     }

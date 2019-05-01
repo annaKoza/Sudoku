@@ -6,7 +6,7 @@ import android.view.View;
 public class BaseSudokuCell extends View {
 	private int value;
 	private boolean modifiable = true;
-	
+	private boolean isSelected;
 	public BaseSudokuCell(Context context) {
 		super(context);
 	}
@@ -33,6 +33,20 @@ public class BaseSudokuCell extends View {
 		if( modifiable ){
 			this.value = value;
 		}
+		invalidate();
+	}
+
+	public boolean getModifable()
+	{
+		return modifiable;
+	}
+
+	public boolean getIsSelected()
+	{
+		return  isSelected;
+	}
+	public void setIsSelected(boolean value) {
+		isSelected = value;
 		invalidate();
 	}
 }

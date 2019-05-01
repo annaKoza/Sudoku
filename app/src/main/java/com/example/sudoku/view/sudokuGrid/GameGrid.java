@@ -2,6 +2,7 @@ package com.example.sudoku.view.sudokuGrid;
 
 import android.content.Context;
 import com.example.sudoku.com.example.sudoku.game.Cell;
+import com.example.sudoku.com.example.sudoku.game.GridSettings;
 
 public class GameGrid {
 	private SudokuCell[][] sudoku = new SudokuCell[9][9];
@@ -15,7 +16,7 @@ public class GameGrid {
 			}
 		}
 	}
-	
+
 	public SudokuCell[][] getGrid(){
 		return sudoku;
 	}
@@ -48,4 +49,15 @@ public class GameGrid {
 
 	}
 
+	public void setItemSelected(int selectedPosX, int selectedPosY) {
+		for(int r=0;r< GridSettings.GRID_SIZE;r++)
+		{
+			for(int c=0;c<GridSettings.GRID_SIZE;c++)
+			{
+				sudoku[r][c].setIsSelected(false);
+
+			}
+		}
+		sudoku[selectedPosX][selectedPosY].setIsSelected(true);
+	}
 }
