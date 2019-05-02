@@ -24,7 +24,6 @@ public class SudokuCell extends BaseSudokuCell {
 		drawSelected(canvas);
 		drawColor(canvas);
 		drawNumber(canvas);
-		drawLines(canvas);
 	}
 
 	private void drawSelected(Canvas canvas) {
@@ -38,13 +37,13 @@ public class SudokuCell extends BaseSudokuCell {
 		{
 			mPaint.setColor(Color.TRANSPARENT);
 		}
-		canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
+		canvas.drawRect(1, 1, getWidth()-2, getHeight()-2, mPaint);
 	}
 
 	private void drawColor(Canvas canvas) {
 		mPaint.setStyle(Paint.Style.FILL);
 		mPaint.setColor(getModifable() ? Color.TRANSPARENT : Color.GRAY);
-		canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
+		canvas.drawRect(1, 1, getWidth()-2, getHeight()-2, mPaint);
 	}
 
 	private void drawNumber(Canvas canvas){
@@ -55,17 +54,9 @@ public class SudokuCell extends BaseSudokuCell {
 		Rect bounds = new Rect();
 
 		mPaint.getTextBounds(String.valueOf(getValue()), 0, String.valueOf(getValue()).length(), bounds);
-		
 		if( getValue() != 0 ){
 			canvas.drawText(String.valueOf(getValue()), (getWidth() - bounds.width())/2, (getHeight() + bounds.height())/2	, mPaint);
 		}
 	}
-	
-	private void drawLines(Canvas canvas) {
-		mPaint.setColor(Color.BLACK);
-		mPaint.setStrokeWidth(3);
-		mPaint.setStyle(Style.STROKE);
 
-		canvas.drawRect(0, 0, getWidth(), getHeight(), mPaint);
-	}
 }
