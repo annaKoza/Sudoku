@@ -20,15 +20,13 @@ public class SudokuGridView extends GridView{
 	private final Paint mPaint;
 	private float cellHeight;
 	private float cellWidth;
-	private final Context context;
 
 	public SudokuGridView(final Context context , AttributeSet attrs) {
 		super(context,attrs);
 		mPaint = new Paint();
 		mSectorLinePaint = new Paint();
 
-		this.context = context;
-		SudokuGridViewAdapter gridViewAdapter = new SudokuGridViewAdapter(context);
+		SudokuGridViewAdapter gridViewAdapter = new SudokuGridViewAdapter();
 		setAdapter(gridViewAdapter);
 
 		setOnItemClickListener(new OnItemClickListener() {
@@ -55,7 +53,7 @@ public class SudokuGridView extends GridView{
 	private void drawLines(Canvas canvas) {
 
 		// draw vertical lines
-		for (int c = 0; c <= 9; c++) {
+		for (int c = 1; c < 9; c++) {
 			float x = (c * cellWidth);
 			canvas.drawLine(x, 0, x, getHeight(), mPaint);
 		}
@@ -67,12 +65,14 @@ public class SudokuGridView extends GridView{
 		}
 
 		// draw sector (thick) lines
-		for (int c = 0; c <= 9; c = c + 3) {
+		for (int c = 0; c < 9; c = c + 3) {
+			if(c == 0) continue;
 			float x = (c * cellWidth);
 			canvas.drawRect(x, 0, x , getHeight(), mSectorLinePaint);
 		}
 
-		for (int r = 0; r <= 9; r = r + 3) {
+		for (int r = 0; r < 9; r = r + 3) {
+			if(r == 0) continue;
 			float y = r * cellHeight;
 			canvas.drawRect(0, y , getWidth(), y , mSectorLinePaint);
 		}
@@ -91,10 +91,8 @@ public class SudokuGridView extends GridView{
 	}
 
 	class SudokuGridViewAdapter extends BaseAdapter{
-		private Context context;
 		
-		public SudokuGridViewAdapter(Context context) {
-			this.context = context;
+		public SudokuGridViewAdapter() {
 		}
 		
 		@Override
