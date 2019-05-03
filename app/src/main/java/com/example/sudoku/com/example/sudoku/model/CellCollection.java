@@ -1,4 +1,4 @@
-package com.example.sudoku.com.example.sudoku.game;
+package com.example.sudoku.com.example.sudoku.model;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -131,7 +131,7 @@ public class CellCollection {
         for (CellGroup row : groups) {
             Cell[] cells = row.getCells();
             for (Cell cell : cells) {
-                if (cell.getValue() == 0 && cell.getPossiblevaluesCount() == 2) {
+                if (cell.getValue() == 0 && cell.getPossibleValuesCount() == 2) {
                     for (Cell cellTwo : cells) {
                         if (cell != cellTwo && cellTwo.checkIfPossibleValueListIsTheSame(cell.getPossibleValues())) {
                             for (Cell cellThird : cells) {
@@ -140,7 +140,7 @@ public class CellCollection {
                                     if (cellThird.getPossibleValues().removeAll(cell.getPossibleValues())) {
                                         changes = true;
                                     }
-                                    if (cellThird.getPossiblevaluesCount() == 0)
+                                    if (cellThird.getPossibleValuesCount() == 0)
                                         throw new Exception("Invalid Move twins in rows");
 
                                     if (cellThird.updateValueIfReady()) {
@@ -164,14 +164,14 @@ public class CellCollection {
         for (CellGroup column : groups) {
             Cell[] columnCells = column.getCells();
             for (Cell cell : columnCells) {
-                if (cell.getValue() == 0 && cell.getPossiblevaluesCount() == 3) {
+                if (cell.getValue() == 0 && cell.getPossibleValuesCount() == 3) {
                     List<Cell> selectedCells = new ArrayList<>();
                     selectedCells.add(cell);
 
                     for (Cell cellSecond : columnCells) {
                         if (cell != cellSecond
                                 && (cell.checkIfPossibleValueListIsTheSame(cellSecond.getPossibleValues())
-                                || cellSecond.getPossiblevaluesCount() == 2
+                                || cellSecond.getPossibleValuesCount() == 2
                                 && cell.checkIfContainsPossibleValue(cellSecond.getPossibleValues())))
 
                             selectedCells.add(cellSecond);
@@ -187,7 +187,7 @@ public class CellCollection {
                                 if (cellThird.getPossibleValues().removeAll(cell.getPossibleValues())) {
                                     changes = true;
                                 }
-                                if (cellThird.getPossiblevaluesCount() == 0)
+                                if (cellThird.getPossibleValuesCount() == 0)
                                     throw new Exception("Invalid Move triplates in columns");
 
                                 if (cellThird.updateValueIfReady()) {
@@ -343,11 +343,7 @@ public class CellCollection {
             throw new Exception(ex.getMessage(), ex);
         }
 
-        if (isPuzzleSolved()) {
-
-            return true;
-        } else
-            return false;
+        return isPuzzleSolved();
     }
 
     private void solvePuzzleByBruteForce() throws Exception {
@@ -390,8 +386,8 @@ public class CellCollection {
         int min = 10;
         for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
             for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-                if (cells[r][c].getValue() == 0 && cells[r][c].getPossiblevaluesCount() < min) {
-                    min = cells[r][c].getPossiblevaluesCount();
+                if (cells[r][c].getValue() == 0 && cells[r][c].getPossibleValuesCount() < min) {
+                    min = cells[r][c].getPossibleValuesCount();
                     cell = cells[r][c];
                 }
             }
@@ -665,10 +661,6 @@ public class CellCollection {
             }
         }
     }
-    public Cell[][] getCells()
-    {
-        return cells;
-    }
     public Cell getCellOnPosition(int r, int c)
     {
         if(r<GridSettings.GRID_SIZE && c <GridSettings.GRID_SIZE)
@@ -677,20 +669,17 @@ public class CellCollection {
             throw new IllegalArgumentException("out of Sudoku grid bound");
     }
 
-    public boolean solveEmpty() {
+    public Cell[][] solve() {
         try {
             if (solvePuzzle()) {
                 bruteForceStop = true;
-                return true;
             } else {
                 solvePuzzleByBruteForce();
-                if (bruteForceStop)
-                    return true;
             }
         } catch (Exception ex) {
-           return false;
+            throw new IllegalStateException("Cannot solve puzzle");
         }
-        return false;
+        return cells;
     }
 
     public Cell[][] resetPuzzle() {

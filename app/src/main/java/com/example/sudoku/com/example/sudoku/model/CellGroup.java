@@ -1,4 +1,4 @@
-package com.example.sudoku.com.example.sudoku.game;
+package com.example.sudoku.com.example.sudoku.model;
 
 import java.util.HashMap;
 import java.util.Map;

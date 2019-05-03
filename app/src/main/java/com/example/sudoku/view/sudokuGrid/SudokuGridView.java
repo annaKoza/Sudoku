@@ -11,20 +11,29 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 
-import com.example.sudoku.com.example.sudoku.game.GridSettings;
-import com.example.sudoku.view.GameEngine;
+import com.example.sudoku.com.example.sudoku.model.Cell;
+import com.example.sudoku.com.example.sudoku.model.GridSettings;
+import com.example.sudoku.viewModel.SudokuPuzzleViewModel;
 
 public class SudokuGridView extends GridView{
 
+	private SudokuPuzzleViewModel model;
 	private final Paint mSectorLinePaint;
 	private final Paint mPaint;
 	private float cellHeight;
 	private float cellWidth;
+	private SudokuCell[][] sudoku = new SudokuCell[9][9];
 
 	public SudokuGridView(final Context context , AttributeSet attrs) {
 		super(context,attrs);
 		mPaint = new Paint();
 		mSectorLinePaint = new Paint();
+
+		for (int x = 0; x < 9; x++) {
+			for (int y = 0; y < 9; y++) {
+				sudoku[x][y] = new SudokuCell(context);
+			}
+		}
 
 		SudokuGridViewAdapter gridViewAdapter = new SudokuGridViewAdapter();
 		setAdapter(gridViewAdapter);
@@ -34,7 +43,7 @@ public class SudokuGridView extends GridView{
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 				int x = position % GridSettings.GRID_SIZE;
 				int y = position / GridSettings.GRID_SIZE;
-				GameEngine.getInstance().setSelectedPosition(x, y);
+				setSelectedPosition(x, y);
 			}
 		});
 
@@ -44,6 +53,36 @@ public class SudokuGridView extends GridView{
 		mSectorLinePaint.setColor(Color.RED);
 		mSectorLinePaint.setStrokeWidth(4);
 		mSectorLinePaint.setStyle(Paint.Style.FILL_AND_STROKE);
+	}
+
+	private void setGrid(Cell[][] grid) {
+
+		for (int x = 0; x < 9; x++) {
+			for (int y = 0; y < 9; y++) {
+				sudoku[x][y].setInitValue(grid[x][y].getValue());
+				if (!grid[x][y].isEditable()) {
+					sudoku[x][y].setNotModifiable();
+				}
+			}
+		}
+	}
+
+	private SudokuCell getItem(int x, int y) {
+		return sudoku[x][y];
+	}
+
+	private SudokuCell getsItem(int position) {
+		int x = position % 9;
+		int y = position / 9;
+
+		return getItem(x, y);
+	}
+
+	public void setItem(int number) {
+
+		int[] currentPosition = model.getCurrentPosition();
+		model.setValueOnCurrentPosition(number);
+		sudoku[currentPosition[0]][currentPosition[1]].setValue(number);
 	}
 	@Override
 	protected void onDraw(Canvas canvas) {
@@ -90,6 +129,43 @@ public class SudokuGridView extends GridView{
 		super.onMeasure(widthMeasureSpec, widthMeasureSpec);
 	}
 
+	public void initialize(int level, SudokuPuzzleViewModel model) {
+		this.model = model;
+		try {
+			setGrid(model.getPuzzle(level));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void initialize(SudokuPuzzleViewModel model) {
+		this.model = model;
+		try {
+			setGrid(model.getPuzzle());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void setSelectedPosition(int x, int y) {
+
+		model.setCurrentPosition(x, y);
+		for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
+			for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
+				sudoku[r][c].setIsSelected(false);
+			}
+		}
+		sudoku[x][y].setIsSelected(true);
+	}
+
+	public void reset() {
+		setGrid(model.resetPuzzle());
+	}
+
+	public void solve() {
+		setGrid(model.solve());
+	}
+
 	class SudokuGridViewAdapter extends BaseAdapter{
 		
 		public SudokuGridViewAdapter() {
@@ -112,7 +188,7 @@ public class SudokuGridView extends GridView{
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
-			return GameEngine.getInstance().getGrid().getItem(position);
+			return getsItem(position);
 		}
 	}
 }

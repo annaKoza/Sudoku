@@ -13,7 +13,7 @@
         android:numColumns="9"
         android:verticalSpacing="0dp"/>
 
-    <com.example.sudoku.view.ButtonsGrid.ButtonsGridView
+    <com.example.sudoku.view.buttonsGrid.ButtonsGridView
         android:id="@+id/buttonsgridview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -1,4 +1,4 @@
-package com.example.sudoku.view.ButtonsGrid;
+package com.example.sudoku.view.buttonsGrid;
 
 import android.app.Activity;
 import android.content.Context;
@@ -10,16 +10,27 @@ import android.widget.BaseAdapter;
 import android.widget.GridView;
 
 import com.example.sudoku.R;
+import com.example.sudoku.view.commands.IValueCommand;
 
-public class ButtonsGridView extends GridView{
+public class ButtonsGridView extends GridView {
 
-	public ButtonsGridView( Context context , AttributeSet attrs ){
+	private IValueCommand command;
+
+	public ButtonsGridView(Context context, AttributeSet attrs) {
 		super(context , attrs);
-		
+
 		ButtonsGridViewAdapter gridViewAdapter = new ButtonsGridViewAdapter(context);
 		setAdapter(gridViewAdapter);
 	}
-	
+
+	public void initialize(IValueCommand command) {
+		this.command = command;
+		for (int i = 0; i < getChildCount(); i++) {
+			NumberButton button = (NumberButton) getChildAt(i);
+			button.initialize(command);
+		}
+	}
+
 	class ButtonsGridViewAdapter extends BaseAdapter {
 		
 		private Context context;
@@ -53,19 +64,19 @@ public class ButtonsGridView extends GridView{
 				
 				NumberButton btn;
 				btn = (NumberButton)v;
+				btn.initialize(command);
 				btn.setTextSize(10);
 				btn.setId(position);
 				
 				if( position != 9 ){
 					btn.setText(String.valueOf(position + 1));
 					btn.setNumber(position + 1);
-				}else{
+				} else {
 					btn.setText("DEL");
 					btn.setNumber(0);
 				}
 				return btn;
 			}
-			
 			return v;
 		}
 		

@@ -1,4 +1,4 @@
-package com.example.sudoku.com.example.sudoku.game;
+package com.example.sudoku.com.example.sudoku.model;
 
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
@@ -62,7 +62,7 @@ public class Cell implements Cloneable {
         return possibleValues;
     }
 
-    public int getPossiblevaluesCount()
+    public int getPossibleValuesCount()
     {
         return  possibleValues.size();
     }
@@ -180,6 +180,7 @@ public class Cell implements Cloneable {
         value = cell.value;
         possibleValues = new ArrayList<>(cell.possibleValues);
     }
+
     public List<Integer> getRandomizedPossibleValues()
     {
         List<Integer> randomValues = new ArrayList<>(possibleValues);
