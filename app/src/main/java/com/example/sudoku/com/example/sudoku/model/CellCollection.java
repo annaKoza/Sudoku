@@ -1,12 +1,18 @@
 package com.example.sudoku.com.example.sudoku.model;
-import java.util.ArrayList;
+
+import com.example.sudoku.com.example.sudoku.model.algorithms.AlgorithmProcessor;
+import com.example.sudoku.com.example.sudoku.model.algorithms.CheckColumnsAndRowsAlgorithm;
+import com.example.sudoku.com.example.sudoku.model.algorithms.CheckType;
+import com.example.sudoku.com.example.sudoku.model.algorithms.LookForLoneRangersAlgorithm;
+import com.example.sudoku.com.example.sudoku.model.algorithms.LookForTripletsAlgorithm;
+import com.example.sudoku.com.example.sudoku.model.algorithms.LookForTwinsAlgorithm;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
 class CoordinatesList {
     private HashMap<String, int[]> coordinates;
-
     public CoordinatesList() {
         coordinates = new HashMap<>();
     }
@@ -31,17 +37,42 @@ class CoordinatesList {
 
 public class CellCollection {
 
+    private AlgorithmProcessor chainOfAlgorithms;
+    private ScoreCounter scoreCounter = new ScoreCounter();
     boolean bruteForceStop = false;
     private Cell[][] cells;
     private CellGroup[] rows;
     private CellGroup[] columns;
     private CellGroup[] sectors;
-    private int totalscore;
     private Cell[][] cells_backup;
     private CoordinatesList emptyCellsCoordinates;
 
+
     private CellCollection() {
+        chainOfAlgorithms = new LookForTripletsAlgorithm(CheckType.Column);
+        chainOfAlgorithms.linkWith(new LookForTripletsAlgorithm(CheckType.Rows))
+                .linkWith(new LookForTripletsAlgorithm(CheckType.Sectors))
+                .linkWith(new LookForTwinsAlgorithm(CheckType.Column))
+                .linkWith(new LookForTwinsAlgorithm(CheckType.Rows))
+                .linkWith(new LookForTwinsAlgorithm(CheckType.Sectors))
+                .linkWith(new LookForLoneRangersAlgorithm(CheckType.Column))
+                .linkWith(new LookForLoneRangersAlgorithm(CheckType.Rows))
+                .linkWith(new LookForLoneRangersAlgorithm(CheckType.Sectors))
+                .linkWith(new CheckColumnsAndRowsAlgorithm(CheckType.Rows));
+        AlgorithmProcessor.setScoreCounter(scoreCounter);
         InitializeCollection();
+    }
+
+    public CellGroup[] getColumns() {
+        return columns;
+    }
+
+    public CellGroup[] getRows() {
+        return rows;
+    }
+
+    public CellGroup[] getSectors() {
+        return sectors;
     }
 
     public static CellCollection createEmptyGrid() {
@@ -74,280 +105,17 @@ public class CellCollection {
         }
     }
 
-    private boolean checkColumnsAndRows() throws Exception {
-        boolean changes = false;
-        for (int row = 0; row < GridSettings.GRID_SIZE; row++) {
-            for (int col = 0; col < GridSettings.GRID_SIZE; col++) {
-                if (cells[row][col].getValue() == 0) {
-                    try {
-                        cells[row][col].calculatePossibleValues();
-                    } catch (Exception ex) {
-                        throw new Exception(ex.getMessage());
-                    }
+    private boolean solvePuzzleByAlgorithms() throws Exception {
 
-                    if (cells[row][col].updateValueIfReady()) {
-                        changes = true;
-                        totalscore += 1;
-                    }
-                }
-            }
-        }
-        return changes;
-    }
-
-    private boolean lookForLoneRangersInGroups(CellGroup[] group) {
-        boolean changes = false;
-        int occurrence;
-        Cell cellToChange = null;
-
-        for (CellGroup row : group) {
-            for (int n = 1; n <= GridSettings.GRID_SIZE; n++) {
-                occurrence = 0;
-                for (Cell cell : row.getCells()) {
-
-                    if (cell.getValue() == 0 && cell.checkIfContainsPossibleValue(n)) {
-                        occurrence += 1;
-
-                        if (occurrence > 1)
-                            break;
-
-                        cellToChange = cell;
-                    }
-                }
-                if (occurrence == 1) {
-                    cellToChange.setValue(n);
-                    changes = true;
-                    totalscore += 2;
-                    cellToChange = null;
-                }
-            }
-        }
-        return changes;
-    }
-
-    private boolean lookForTwinsInGroups(CellGroup[] groups) throws Exception {
-        boolean changes = false;
-
-        for (CellGroup row : groups) {
-            Cell[] cells = row.getCells();
-            for (Cell cell : cells) {
-                if (cell.getValue() == 0 && cell.getPossibleValuesCount() == 2) {
-                    for (Cell cellTwo : cells) {
-                        if (cell != cellTwo && cellTwo.checkIfPossibleValueListIsTheSame(cell.getPossibleValues())) {
-                            for (Cell cellThird : cells) {
-                                if (cellThird.getValue() == 0 && cellThird != cell && cellThird != cellTwo) {
-
-                                    if (cellThird.getPossibleValues().removeAll(cell.getPossibleValues())) {
-                                        changes = true;
-                                    }
-                                    if (cellThird.getPossibleValuesCount() == 0)
-                                        throw new Exception("Invalid Move twins in rows");
-
-                                    if (cellThird.updateValueIfReady()) {
-                                        totalscore += 3;
-                                    }
-                                }
-
-                            }
-                        }
-
-                    }
-                }
-
-            }
-        }
-        return changes;
-    }
-
-    private boolean lookForTripletsInGroups(CellGroup[] groups) throws Exception {
-        boolean changes = false;
-        for (CellGroup column : groups) {
-            Cell[] columnCells = column.getCells();
-            for (Cell cell : columnCells) {
-                if (cell.getValue() == 0 && cell.getPossibleValuesCount() == 3) {
-                    List<Cell> selectedCells = new ArrayList<>();
-                    selectedCells.add(cell);
-
-                    for (Cell cellSecond : columnCells) {
-                        if (cell != cellSecond
-                                && (cell.checkIfPossibleValueListIsTheSame(cellSecond.getPossibleValues())
-                                || cellSecond.getPossibleValuesCount() == 2
-                                && cell.checkIfContainsPossibleValue(cellSecond.getPossibleValues())))
-
-                            selectedCells.add(cellSecond);
-                    }
-
-                    if (selectedCells.size() == 3) {
-                        for (Cell cellThird : columnCells) {
-                            if (cellThird.getValue() == 0
-                                    && cellThird != selectedCells.get(0)
-                                    && cellThird != selectedCells.get(1)
-                                    && cellThird != selectedCells.get(2)
-                            ) {
-                                if (cellThird.getPossibleValues().removeAll(cell.getPossibleValues())) {
-                                    changes = true;
-                                }
-                                if (cellThird.getPossibleValuesCount() == 0)
-                                    throw new Exception("Invalid Move triplates in columns");
-
-                                if (cellThird.updateValueIfReady()) {
-                                    totalscore += 4;
-                                }
-                            }
-                        }
-                    }
-
-                }
-
-            }
-        }
-        return changes;
-    }
-
-    private boolean solvePuzzle() throws Exception {
-        boolean changes;
-        boolean ExitLoop = false;
         try {
-            do {
-                do {
-                    do {
-                        do {
-                            do {
-                                do {
-                                    do {
-                                        do {
-                                            do {
-                                                do {
-                                                    // Minigrid Elimination---
-                                                    changes = checkColumnsAndRows();
-
-                                                    if (isPuzzleSolved()) {
-                                                        ExitLoop = true;
-                                                        break;
-                                                    }
-                                                }
-                                                while (changes);
-                                                if (ExitLoop)
-                                                    break;
-
-                                                // ---Look for Lone Rangers in Minigrids---
-                                                changes = lookForLoneRangersInGroups(sectors);
-
-                                                if (isPuzzleSolved()) {
-                                                    ExitLoop = true;
-                                                    break;
-                                                }
-                                            }
-                                            while (changes);
-                                            if (ExitLoop)
-                                                break;
-
-                                            // ---Look for Lone Rangers in Rows---
-                                            changes = lookForLoneRangersInGroups(rows);
-
-                                            if (isPuzzleSolved()) {
-                                                ExitLoop = true;
-                                                break;
-                                            }
-                                        }
-                                        while (changes);
-                                        if (ExitLoop)
-                                            break;
-
-                                        // ---Look for Lone Rangers in Columns---
-                                        changes = lookForLoneRangersInGroups(columns);
-
-                                        if (isPuzzleSolved()) {
-                                            ExitLoop = true;
-                                            break;
-                                        }
-                                    }
-                                    while (changes);
-                                    if (ExitLoop)
-                                        break;
-
-                                    // ---Look for Twins in Minigrids---
-                                    changes = lookForTwinsInGroups(sectors);
-
-                                    if (isPuzzleSolved()) {
-                                        ExitLoop = true;
-                                        break;
-                                    }
-                                }
-                                while (changes);
-                                if (ExitLoop)
-                                    break;
-
-                                // ---Look for Twins in Rows---
-                                changes = lookForTwinsInGroups(rows);
-
-                                if (isPuzzleSolved()) {
-                                    ExitLoop = true;
-                                    break;
-                                }
-
-                            }
-                            while (changes);
-                            if (ExitLoop)
-                                break;
-
-                            // ---Look for Twins in Columns---
-                            changes = lookForTwinsInGroups(columns);
-
-                            if (isPuzzleSolved()) {
-                                ExitLoop = true;
-                                break;
-                            }
-
-                        }
-                        while (changes);
-                        if (ExitLoop)
-                            break;
-
-                        // ---Look for Triplets in Minigrids---
-                        changes = lookForTripletsInGroups(sectors);
-
-                        if (isPuzzleSolved()) {
-                            ExitLoop = true;
-                            break;
-                        }
-
-                    }
-                    while (changes);
-                    if (ExitLoop)
-                        break;
-
-                    // ---Look for Triplets in Rows---
-                    changes = lookForTripletsInGroups(rows);
-
-                    if (isPuzzleSolved()) {
-                        ExitLoop = true;
-                        break;
-                    }
-
-                }
-                while (changes);
-                if (ExitLoop)
-                    break;
-
-                // ---Look for Triplets in Columns---
-                changes = lookForTripletsInGroups(columns);
-
-                if (isPuzzleSolved()) {
-                    break;
-                }
-
-            }
-            while (changes);
+            return chainOfAlgorithms.checkNext(this);
         } catch (Exception ex) {
             throw new Exception(ex.getMessage(), ex);
         }
-
-        return isPuzzleSolved();
     }
 
     private void solvePuzzleByBruteForce() throws Exception {
-        totalscore += 5;
+        scoreCounter.addToScore(5);
         Cell cell = findCellWithFewestPossibleValues();
 
         List<Integer> possibleValues = cell.getRandomizedPossibleValues();
@@ -361,7 +129,7 @@ public class CellCollection {
         for (int i = 0; i < possibleValues.size(); i++) {
             cell.setValue(possibleValues.get(i));
             try {
-                if (solvePuzzle()) {
+                if (solvePuzzleByAlgorithms()) {
                     bruteForceStop = true;
                     return;
                 } else {
@@ -370,7 +138,7 @@ public class CellCollection {
                         return;
                 }
             } catch (Exception ex) {
-                totalscore += 5;
+                scoreCounter.addToScore(5);
                 for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
                     for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
                         cells[r][c].LoadState();
@@ -395,18 +163,19 @@ public class CellCollection {
         return cell;
     }
 
-
     private int randomNumber(int min, int max) {
         Random r = new Random();
         return r.nextInt((max - min) + 1) + min;
     }
 
     public Cell[][] getPuzzle(int level) throws Exception {
-        totalscore = 0;
+        scoreCounter.resetScore();
+
         boolean breakMe = false;
         do {
             boolean result = tryGenerateNewPuzzle(level);
             if (result) {
+                int totalscore = scoreCounter.getTotalScore();
                 switch (level) {
                     case 1: {
                         if (totalscore >= 42 & totalscore <= 48)
@@ -448,7 +217,7 @@ public class CellCollection {
         }
 
         try {
-            if (!solvePuzzle())
+            if (!solvePuzzleByAlgorithms())
                 solvePuzzleByBruteForce();
         } catch (Exception ex) {
             return false;
@@ -477,9 +246,9 @@ public class CellCollection {
     {
         int tries = 0;
         do {
-            totalscore = 0;
+            scoreCounter.resetScore();
             try {
-                if (!solvePuzzle()) {
+                if (!solvePuzzleByAlgorithms()) {
                     if (level < 3) {
                         vacateAnotherPairOfCells(cells_backup);
                         tries += 1;
@@ -671,7 +440,7 @@ public class CellCollection {
 
     public Cell[][] solve() {
         try {
-            if (solvePuzzle()) {
+            if (solvePuzzleByAlgorithms()) {
                 bruteForceStop = true;
             } else {
                 solvePuzzleByBruteForce();
