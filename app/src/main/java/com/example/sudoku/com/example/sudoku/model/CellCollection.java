@@ -55,10 +55,7 @@ public class CellCollection {
     }
 
     Cell getCellOnPosition(Position position) {
-        if (position.getRow() < GridSettings.GRID_SIZE && position.getColumn() < GridSettings.GRID_SIZE)
-            return cells[position.getRow()][position.getColumn()];
-        else
-            throw new IllegalArgumentException("out of SudokuPuzzle grid bound");
+        return cells[position.getRow()][position.getColumn()];
     }
 
     public void markAllCellsAsValid() {
