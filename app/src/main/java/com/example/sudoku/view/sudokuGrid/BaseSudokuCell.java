@@ -7,8 +7,11 @@ public class BaseSudokuCell extends View {
 	private int value;
 	private boolean modifiable = true;
 	private boolean isSelected;
+	private boolean isValid;
+
 	public BaseSudokuCell(Context context) {
 		super(context);
+		isValid = true;
 	}
 
 	@Override
@@ -36,7 +39,7 @@ public class BaseSudokuCell extends View {
 		invalidate();
 	}
 
-	public boolean getModifable()
+	public boolean getModifiable()
 	{
 		return modifiable;
 	}
@@ -47,6 +50,15 @@ public class BaseSudokuCell extends View {
 	}
 	public void setIsSelected(boolean value) {
 		isSelected = value;
+		invalidate();
+	}
+
+	public boolean getIsValid() {
+		return isValid;
+	}
+
+	public void setIsValid(boolean value) {
+		isValid = value;
 		invalidate();
 	}
 }

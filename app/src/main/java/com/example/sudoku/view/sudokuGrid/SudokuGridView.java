@@ -15,6 +15,8 @@ import com.example.sudoku.com.example.sudoku.model.Cell;
 import com.example.sudoku.com.example.sudoku.model.GridSettings;
 import com.example.sudoku.viewModel.SudokuPuzzleViewModel;
 
+import java.util.List;
+
 public class SudokuGridView extends GridView{
 
 	private SudokuPuzzleViewModel model;
@@ -70,7 +72,6 @@ public class SudokuGridView extends GridView{
 	private SudokuCell getItem(int x, int y) {
 		return sudoku[x][y];
 	}
-
 	private SudokuCell getsItem(int position) {
 		int x = position % 9;
 		int y = position / 9;
@@ -166,9 +167,23 @@ public class SudokuGridView extends GridView{
 		setGrid(model.solve());
 	}
 
-	class SudokuGridViewAdapter extends BaseAdapter{
-		
-		public SudokuGridViewAdapter() {
+	public void validate() {
+
+		for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
+			for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
+				sudoku[r][c].setIsValid(true);
+			}
+		}
+		List<Cell> invalidCells = model.getInvalidCells();
+		for (Cell cell : invalidCells) {
+			int[] position = cell.getPosition();
+			sudoku[position[1]][position[0]].setIsValid(false);
+		}
+	}
+
+	class SudokuGridViewAdapter extends BaseAdapter {
+
+		SudokuGridViewAdapter() {
 		}
 		
 		@Override

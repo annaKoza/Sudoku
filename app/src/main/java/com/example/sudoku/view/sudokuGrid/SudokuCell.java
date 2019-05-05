@@ -9,21 +9,34 @@ import android.graphics.Rect;
 
 public class SudokuCell extends BaseSudokuCell {
 
+	private final Paint invalidPaint;
 	private Paint mPaint;
 	
 	public SudokuCell( Context context ){
 		super(context);
 		
 		mPaint = new Paint();
+		invalidPaint = new Paint();
 	}
 	
 	@Override
 	protected void onDraw(Canvas canvas) {
 		super.onDraw(canvas);
-
 		drawSelected(canvas);
 		drawColor(canvas);
+		drawInvalid(canvas);
 		drawNumber(canvas);
+	}
+
+	private void drawInvalid(Canvas canvas) {
+		invalidPaint.setStyle(Paint.Style.FILL);
+
+		if (!getIsValid() && getModifiable()) {
+			invalidPaint.setColor(Color.RED);
+		} else {
+			invalidPaint.setColor(Color.TRANSPARENT);
+		}
+		canvas.drawRect(20, 20, getWidth() - 21, getHeight() - 21, invalidPaint);
 	}
 
 	private void drawSelected(Canvas canvas) {
@@ -32,8 +45,7 @@ public class SudokuCell extends BaseSudokuCell {
 		if(getIsSelected())
 		{
 			mPaint.setColor(Color.BLUE);
-		}
-		else if(!getIsSelected() && getModifable())
+		} else if (!getIsSelected() && getModifiable())
 		{
 			mPaint.setColor(Color.TRANSPARENT);
 		}
@@ -42,7 +54,7 @@ public class SudokuCell extends BaseSudokuCell {
 
 	private void drawColor(Canvas canvas) {
 		mPaint.setStyle(Paint.Style.FILL);
-		mPaint.setColor(getModifable() ? Color.TRANSPARENT : Color.GRAY);
+		mPaint.setColor(getModifiable() ? Color.TRANSPARENT : Color.GRAY);
 		canvas.drawRect(1, 1, getWidth()-2, getHeight()-2, mPaint);
 	}
 

@@ -37,8 +37,7 @@ public class Cell implements Cloneable {
      */
     public int[] getPosition()
     {
-        int[] pos = {columnIndex, rowIndex};
-        return pos;
+        return new int[]{columnIndex, rowIndex};
     }
 
     public boolean checkIfPossibleValueListIsTheSame(List<Integer> otherList)
@@ -84,7 +83,7 @@ public class Cell implements Cloneable {
         return isEditable;
     }
 
-    public void setEditable(boolean editable) {
+    void setEditable(boolean editable) {
         isEditable = editable;
     }
 
@@ -92,7 +91,7 @@ public class Cell implements Cloneable {
         return isValid;
     }
 
-    public void setValid(boolean valid) {
+    void setValid(boolean valid) {
         isValid = valid;
     }
 
@@ -133,7 +132,7 @@ public class Cell implements Cloneable {
             if (cell.getValue() != 0)
                 this.possibleValues.remove(Integer.valueOf(cell.getValue()));
         }
-        // ---Step (2) check by rector---
+        // ---Step (2) check by sector---
         for (Cell cell: sector.getCells())
         {
             if (cell.getValue() != 0)
@@ -154,24 +153,25 @@ public class Cell implements Cloneable {
         return cell;
     }
 
-    public void SaveState() {
+    void SaveState() {
         valueBackup.push(value);
         possibleValuesBackup.push(new ArrayList<>(possibleValues));
     }
-    public void LoadState()
+
+    void LoadState()
     {
         value = valueBackup.pop();
         possibleValues = possibleValuesBackup.pop();
     }
 
-    public void ResetCell() {
+    void ResetCell() {
         value = 0;
         possibleValues = new ArrayList<>();
         possibleValuesBackup = new Stack<>();
         valueBackup = new Stack<>();
     }
 
-    public void ClearHistory() {
+    void ClearHistory() {
         possibleValuesBackup = new Stack<>();
         valueBackup = new Stack<>();
     }
@@ -181,7 +181,7 @@ public class Cell implements Cloneable {
         possibleValues = new ArrayList<>(cell.possibleValues);
     }
 
-    public List<Integer> getRandomizedPossibleValues()
+    List<Integer> getRandomizedPossibleValues()
     {
         List<Integer> randomValues = new ArrayList<>(possibleValues);
         Collections.shuffle(randomValues);

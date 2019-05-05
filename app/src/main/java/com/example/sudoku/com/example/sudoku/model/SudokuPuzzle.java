@@ -210,7 +210,7 @@ public class SudokuPuzzle {
         emptyCellsCoordinates.removeCoordinate(8 - r, 8 - c);
     }
 
-    private boolean isPuzzleSolved(boolean takeEmptyCellsIntoAccount) {
+    private boolean checkPuzzleSolution(boolean takeEmptyCellsIntoAccount) {
         boolean valid = true;
 
         collection.markAllCellsAsValid();
@@ -294,12 +294,12 @@ public class SudokuPuzzle {
         return collection.getCells();
     }
 
-    public boolean isPuzzleSolved() {
-        return isPuzzleSolved(true);
+    public boolean checkPuzzleSolution() {
+        return checkPuzzleSolution(true);
     }
 
-    public boolean isPuzzleSolvable() {
-        return isPuzzleSolved(false);
+    public boolean checkPuzzleCorrectness() {
+        return checkPuzzleSolution(false);
     }
 
     public Cell[][] getCells() {

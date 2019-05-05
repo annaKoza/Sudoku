@@ -35,10 +35,10 @@ public class SolveActivity extends AppCompatActivity implements View.OnClickList
         switch (v.getId())
         {
             case R.id.solve_grid_Button:
-                if (viewModel.canPuzzleBeSolved())
+                if (viewModel.checkPuzzleCorrectness()) {
                     gridView.solve();
-                else
-                    //TODO: add information about wrong values
+                }
+                gridView.validate();
                 break;
             default:
                 break;

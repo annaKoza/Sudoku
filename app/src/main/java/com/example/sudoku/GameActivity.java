@@ -38,7 +38,7 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
         resetButton.setOnClickListener(this);
 
         Intent intent = getIntent();
-        Integer level = intent.getIntExtra("level",1);
+        int level = intent.getIntExtra("level", 1);
         gridView.initialize(level, viewModel);
 
     }
@@ -50,20 +50,18 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
                 gridView.reset();
                 break;
             case R.id.checkButton:
-
                 LayoutInflater inflater = getLayoutInflater();
-
-                if (viewModel.isPuzzleSolved())
+                if (viewModel.checkPuzzleSolution())
                {
                    layout = inflater.inflate(R.layout.ok_check_game_custom_toast,
                            (ViewGroup)findViewById(R.id.ok_custom_toast_container));
-                   // TODO: ask if start new game
                }
                else
                {
                    layout = inflater.inflate(R.layout.not_ok_check_game_custom_toast,
                            (ViewGroup)findViewById(R.id.not_ok_custom_toast_container));
                }
+
                 Toast toast = new Toast(getApplicationContext());
                 toast.setGravity(Gravity.CENTER_VERTICAL, 0, 0);
                 toast.setDuration(Toast.LENGTH_LONG);
@@ -73,5 +71,6 @@ public class GameActivity extends AppCompatActivity implements View.OnClickListe
             default:
                 break;
         }
+        gridView.validate();
     }
 }

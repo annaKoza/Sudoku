@@ -1,17 +1,17 @@
 package com.example.sudoku.com.example.sudoku.model;
 
 public final class ScoreCounter {
-    private int totalscore;
+    private int totalScore;
 
-    public int getTotalScore() {
-        return totalscore;
+    int getTotalScore() {
+        return totalScore;
     }
 
     public void addToScore(int score) {
-        totalscore += score;
+        totalScore += score;
     }
 
-    public void resetScore() {
-        totalscore = 0;
+    void resetScore() {
+        totalScore = 0;
     }
 }

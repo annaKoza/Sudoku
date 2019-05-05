@@ -1,6 +1,10 @@
 package com.example.sudoku.viewModel;
 import com.example.sudoku.com.example.sudoku.model.Cell;
+import com.example.sudoku.com.example.sudoku.model.GridSettings;
 import com.example.sudoku.com.example.sudoku.model.SudokuPuzzle;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SudokuPuzzleViewModel {
 
@@ -23,8 +27,8 @@ public class SudokuPuzzleViewModel {
         return model.solve();
     }
 
-    public boolean canPuzzleBeSolved() {
-        return model.isPuzzleSolvable();
+    public boolean checkPuzzleCorrectness() {
+        return model.checkPuzzleCorrectness();
     }
 
     public Cell[][] getPuzzle(int level) throws Exception {
@@ -32,6 +36,19 @@ public class SudokuPuzzleViewModel {
         return cells;
     }
 
+    public List<Cell> getInvalidCells() {
+        List<Cell> invalidCells = new ArrayList<>();
+        if (model.checkPuzzleCorrectness())
+            return invalidCells;
+
+        for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
+            for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
+                if (!cells[r][c].isValid())
+                    invalidCells.add(cells[r][c]);
+            }
+        }
+        return invalidCells;
+    }
     public Cell[][] getPuzzle() {
         return cells;
     }
@@ -48,7 +65,7 @@ public class SudokuPuzzleViewModel {
         return model.resetPuzzle();
     }
 
-    public boolean isPuzzleSolved() {
-        return model.isPuzzleSolved();
+    public boolean checkPuzzleSolution() {
+        return model.checkPuzzleSolution();
     }
 }

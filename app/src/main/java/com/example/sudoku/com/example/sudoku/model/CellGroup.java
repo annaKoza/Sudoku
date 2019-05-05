@@ -6,12 +6,14 @@ import java.util.Map;
 public class CellGroup {
     private Cell[] cells;
     private int count;
-    public CellGroup()
+
+    CellGroup()
     {
         cells = new Cell[GridSettings.GRID_SIZE];
         count = 0;
     }
-    public void addCell(Cell cell)
+
+    void addCell(Cell cell)
     {
         cells[count] = cell;
         count++;
@@ -25,18 +27,18 @@ public class CellGroup {
     {
         int repetitionNumber = 0;
         Map<Integer, Cell> cellsByValue = new HashMap<>();
-        for (int i = 0; i < cells.length; i++) {
-            Cell cell = cells[i];
+        for (Cell cell : cells) {
             int value = cell.getValue();
-            if (cellsByValue.get(value) != null)
-            {
-                cells[i].setValid(false);
+            if (cellsByValue.get(value) != null) {
+                cell.setValid(false);
                 cellsByValue.get(value).setValid(false);
-                if(!takeEmptyIntoAccount && value == 0)
+                if (!takeEmptyIntoAccount && value == 0) {
+                    cell.setValid(true);
+                    cellsByValue.get(value).setValid(true);
                     continue;
+                }
                 repetitionNumber++;
-            }
-            else {
+            } else {
                 cellsByValue.put(value, cell);
             }
 

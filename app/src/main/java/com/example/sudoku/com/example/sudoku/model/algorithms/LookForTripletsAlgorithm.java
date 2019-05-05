@@ -43,7 +43,7 @@ public class LookForTripletsAlgorithm extends AlgorithmProcessor {
                                     changes = true;
                                 }
                                 if (cellThird.getPossibleValuesCount() == 0)
-                                    throw new Exception("Invalid Move triplates in columns");
+                                    throw new Exception("Invalid Move triplets in columns");
 
                                 if (cellThird.updateValueIfReady()) {
                                     counter.addToScore(4);
