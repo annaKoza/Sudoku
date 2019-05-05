@@ -24,8 +24,8 @@ public class CellCollection {
         for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
             for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
                 cells[r][c] = new Cell(
-                        c,
-                        r, rows[r], columns[c], sectors[((c / 3) * 3) + (r / 3)]);
+                        new Position(r, c),
+                        rows[r], columns[c], sectors[((c / 3) * 3) + (r / 3)]);
 
                 rows[r].addCell(cells[r][c]);
                 columns[c].addCell(cells[r][c]);
@@ -54,9 +54,9 @@ public class CellCollection {
         return cells;
     }
 
-    Cell getCellOnPosition(int r, int c) {
-        if (r < GridSettings.GRID_SIZE && c < GridSettings.GRID_SIZE)
-            return cells[r][c];
+    Cell getCellOnPosition(Position position) {
+        if (position.getRow() < GridSettings.GRID_SIZE && position.getColumn() < GridSettings.GRID_SIZE)
+            return cells[position.getRow()][position.getColumn()];
         else
             throw new IllegalArgumentException("out of SudokuPuzzle grid bound");
     }

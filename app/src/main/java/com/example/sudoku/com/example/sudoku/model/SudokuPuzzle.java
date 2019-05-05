@@ -42,8 +42,10 @@ public class SudokuPuzzle {
         createEmptyCells(numberOfEmptyCells);
         for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
             for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-                if (collection.getCellOnPosition(r, c).getValue() == 0)
-                    emptyCells.addCoordinate(r, c);
+                final Position position = new Position(r, c);
+                if (collection.getCellOnPosition(position).getValue() == 0) {
+                    emptyCells.addCoordinate(position);
+                }
             }
         }
         return emptyCells;
@@ -63,7 +65,8 @@ public class SudokuPuzzle {
 
                 // get a cell in the first half of the grid
                 while (r == 4 && c > 4);
-                Cell cellToAdd = collection.getCellOnPosition(r, c);
+                final Position position = new Position(r, c);
+                Cell cellToAdd = collection.getCellOnPosition(position);
 
                 for (int j = 0; j < i; j++) {
                     if (emptyCells[j] == cellToAdd) {
@@ -77,9 +80,10 @@ public class SudokuPuzzle {
                     cellToAdd.getPossibleValues().clear();
 
                     // reflect the top half of the grid and make it symmetrical
-                    emptyCells[empty - i] = collection.getCellOnPosition(8 - r, 8 - c);
-                    collection.getCellOnPosition(8 - r, 8 - c).setValue(0);
-                    collection.getCellOnPosition(8 - r, 8 - c).getPossibleValues().clear();
+                    final Position reflectedPosition = new Position(8 - position.getRow(), 8 - position.getColumn());
+                    emptyCells[empty - i] = collection.getCellOnPosition(reflectedPosition);
+                    collection.getCellOnPosition(reflectedPosition).setValue(0);
+                    collection.getCellOnPosition(reflectedPosition).getPossibleValues().clear();
                 }
             }
             while (duplicate);
@@ -109,8 +113,9 @@ public class SudokuPuzzle {
 
         for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
             for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-                cells_backup[r][c] = (Cell) collection.getCellOnPosition(r, c).clone();
-                collection.getCellOnPosition(r, c).ClearHistory();
+                final Position position = new Position(r, c);
+                cells_backup[r][c] = (Cell) collection.getCellOnPosition(position).clone();
+                collection.getCellOnPosition(position).ClearHistory();
             }
         }
 
@@ -155,11 +160,12 @@ public class SudokuPuzzle {
     private void reloadCells() {
         for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
             for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-                if (emptyCellsCoordinates.contains(r, c)) {
-                    collection.getCellOnPosition(r, c).setValue(0);
-                    collection.getCellOnPosition(r, c).setEditable(true);
+                final Position position = new Position(r, c);
+                if (emptyCellsCoordinates.contains(position)) {
+                    collection.getCellOnPosition(position).setValue(0);
+                    collection.getCellOnPosition(position).setEditable(true);
                 } else
-                    collection.getCellOnPosition(r, c).setEditable(false);
+                    collection.getCellOnPosition(position).setEditable(false);
             }
         }
     }
@@ -172,42 +178,43 @@ public class SudokuPuzzle {
 
         for (int row = 0; row < GridSettings.GRID_SIZE; row++) {
             for (int col = 0; col < GridSettings.GRID_SIZE; col++) {
-                if (!emptyCellsCoordinates.contains(row, col)) {
-                    collection.getCellOnPosition(row, col).getPossibleValues().clear();
-                    collection.getCellOnPosition(row, col).setValue(solvedCellsBackup[row][col].getValue());
-                    collection.getCellOnPosition(row, col).getPossibleValues().add(solvedCellsBackup[row][col].getValue());
+                final Position position = new Position(row, col);
+                if (!emptyCellsCoordinates.contains(position)) {
+                    collection.getCellOnPosition(position).getPossibleValues().clear();
+                    collection.getCellOnPosition(position).setValue(solvedCellsBackup[row][col].getValue());
+                    collection.getCellOnPosition(position).getPossibleValues().add(solvedCellsBackup[row][col].getValue());
                 } else {
-                    collection.getCellOnPosition(row, col).getPossibleValues().clear();
-                    collection.getCellOnPosition(row, col).setValue(0);
+                    collection.getCellOnPosition(position).getPossibleValues().clear();
+                    collection.getCellOnPosition(position).setValue(0);
                 }
             }
         }
     }
 
     private void addRandomCoordinateToEmptyCells() {
-        int c;
-        int r;
+        Position position;
         do {
-            c = randomNumber(0, 8);
-            r = randomNumber(0, 8);
+            final int c = randomNumber(0, 8);
+            final int r = randomNumber(0, 8);
+            position = new Position(r, c);
         }
-        while (emptyCellsCoordinates.contains(r, c));
+        while (emptyCellsCoordinates.contains(position));
 
-        emptyCellsCoordinates.addCoordinate(r, c);
-        emptyCellsCoordinates.addCoordinate(8 - r, 8 - c);
+        emptyCellsCoordinates.addCoordinate(position);
+        emptyCellsCoordinates.addCoordinate(new Position(8 - position.getRow(), 8 - position.getColumn()));
     }
 
     private void removeRandomCoordinateFromEmptyCells() {
-        int c;
-        int r;
+        Position position;
         do {
-            c = randomNumber(0, 8);
-            r = randomNumber(0, 8);
+            final int c = randomNumber(0, 8);
+            final int r = randomNumber(0, 8);
+            position = new Position(r, c);
         }
-        while (!emptyCellsCoordinates.contains(r, c));
+        while (!emptyCellsCoordinates.contains(position));
 
-        emptyCellsCoordinates.removeCoordinate(r, c);
-        emptyCellsCoordinates.removeCoordinate(8 - r, 8 - c);
+        emptyCellsCoordinates.removeCoordinate(position);
+        emptyCellsCoordinates.removeCoordinate(new Position(8 - position.getRow(), 8 - position.getColumn()));
     }
 
     private boolean checkPuzzleSolution(boolean takeEmptyCellsIntoAccount) {
@@ -275,7 +282,8 @@ public class SudokuPuzzle {
     public Cell[][] resetPuzzle() {
         for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
             for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-                Cell cell = collection.getCellOnPosition(r, c);
+                final Position position = new Position(r, c);
+                Cell cell = collection.getCellOnPosition(position);
                 cell = cells_backup[r][c];
                 reloadCells();
             }

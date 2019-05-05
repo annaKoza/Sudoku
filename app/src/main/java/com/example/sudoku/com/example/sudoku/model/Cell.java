@@ -10,34 +10,29 @@ public class Cell implements Cloneable {
     private final CellGroup row;
     private final CellGroup column;
     private final CellGroup sector;
+    private final Position position;
     private boolean isValid;
-    private int columnIndex;
-    private int rowIndex;
     private boolean isEditable;
     private List<Integer> possibleValues;
     private int value;
     private Stack<List<Integer>> possibleValuesBackup;
     private Stack<Integer> valueBackup;
 
-    public Cell(int c, int r, CellGroup row, CellGroup column, CellGroup sector) {
+    public Cell(Position position, CellGroup row, CellGroup column, CellGroup sector) {
         this.row = row;
         this.column = column;
         this.sector = sector;
+        this.position = position;
         isEditable = true;
         isValid = true;
-        columnIndex = c;
-        rowIndex = r;
         possibleValues = new ArrayList<>();
         possibleValuesBackup = new Stack<>();
         valueBackup = new Stack<>();
     }
 
-    /**
-     * @return cell position in array. a[0] is xpos, a[1] is ypos
-     */
-    public int[] getPosition()
+    public Position getPosition()
     {
-        return new int[]{columnIndex, rowIndex};
+        return position;
     }
 
     public boolean checkIfPossibleValueListIsTheSame(List<Integer> otherList)
@@ -74,7 +69,7 @@ public class Cell implements Cloneable {
     public void setValue(int value)
     {
         if (value < 0 || value > 9)
-            throw new InvalidParameterException(String.format("Value in column: %d row: %d is not valid", columnIndex, rowIndex));
+            throw new InvalidParameterException(String.format("Value in %s is not valid", position));
         else
             this.value = value;
     }
@@ -140,12 +135,12 @@ public class Cell implements Cloneable {
         }
 
         if (possibleValues.isEmpty())
-            throw new Exception("no possible values in cell"+ columnIndex +" "+ rowIndex);
+            throw new Exception(String.format("no possible values in cell with position %s", position));
     }
 
     @Override
     public Object clone() throws CloneNotSupportedException {
-        Cell cell = new Cell(this.columnIndex, this.rowIndex,this.row,this.column,this.sector);
+        Cell cell = new Cell(this.position, this.row,this.column,this.sector);
         cell.value = this.value;
         cell.isValid = this.isValid;
         cell.possibleValues = new ArrayList<>(this.possibleValues);
