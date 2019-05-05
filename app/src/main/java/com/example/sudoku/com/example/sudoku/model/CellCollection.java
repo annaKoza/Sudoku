@@ -21,16 +21,16 @@ public class CellCollection {
             sectors[i] = new CellGroup();
         }
 
-        for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
-            for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-                cells[r][c] = new Cell(
-                        new Position(r, c),
-                        rows[r], columns[c], sectors[((c / 3) * 3) + (r / 3)]);
+        for (final Position position : new AllPositionsInGrid()) {
+            final int r = position.getRow();
+            final int c = position.getColumn();
+            cells[r][c] = new Cell(
+                    position,
+                    rows[r], columns[c], sectors[((c / 3) * 3) + (r / 3)]);
 
-                rows[r].addCell(cells[r][c]);
-                columns[c].addCell(cells[r][c]);
-                sectors[((c / 3) * 3) + (r / 3)].addCell(cells[r][c]);
-            }
+            rows[r].addCell(cells[r][c]);
+            columns[c].addCell(cells[r][c]);
+            sectors[((c / 3) * 3) + (r / 3)].addCell(cells[r][c]);
         }
     }
 
@@ -59,22 +59,20 @@ public class CellCollection {
     }
 
     public void markAllCellsAsValid() {
-        for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-            for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
-                cells[r][c].setValid(true);
-            }
+        for (final Position position : new AllPositionsInGrid()) {
+            cells[position.getRow()][position.getColumn()].setValid(true);
         }
     }
 
     Cell findCellWithFewestPossibleValues() {
         Cell cell = null;
         int min = 10;
-        for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
-            for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-                if (cells[r][c].getValue() == 0 && cells[r][c].getPossibleValuesCount() < min) {
-                    min = cells[r][c].getPossibleValuesCount();
-                    cell = cells[r][c];
-                }
+        for (final Position position : new AllPositionsInGrid()) {
+            final int r = position.getRow();
+            final int c = position.getColumn();
+            if (cells[r][c].getValue() == 0 && cells[r][c].getPossibleValuesCount() < min) {
+                min = cells[r][c].getPossibleValuesCount();
+                cell = cells[r][c];
             }
         }
         return cell;

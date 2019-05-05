@@ -40,12 +40,9 @@ public class SudokuPuzzle {
         }
 
         createEmptyCells(numberOfEmptyCells);
-        for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
-            for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-                final Position position = new Position(r, c);
-                if (collection.getCellOnPosition(position).getValue() == 0) {
-                    emptyCells.addCoordinate(position);
-                }
+        for (final Position position : new AllPositionsInGrid()) {
+            if (collection.getCellOnPosition(position).getValue() == 0) {
+                emptyCells.addCoordinate(position);
             }
         }
         return emptyCells;
@@ -111,12 +108,10 @@ public class SudokuPuzzle {
             return false;
         }
 
-        for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
-            for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-                final Position position = new Position(r, c);
-                cells_backup[r][c] = (Cell) collection.getCellOnPosition(position).clone();
-                collection.getCellOnPosition(position).ClearHistory();
-            }
+        for (final Position position : new AllPositionsInGrid()) {
+            cells_backup[position.getRow()][position.getColumn()] =
+                    (Cell) collection.getCellOnPosition(position).clone();
+            collection.getCellOnPosition(position).ClearHistory();
         }
 
         emptyCellsCoordinates = initializeEmptyCells(level);
@@ -158,15 +153,12 @@ public class SudokuPuzzle {
     }
 
     private void reloadCells() {
-        for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
-            for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-                final Position position = new Position(r, c);
-                if (emptyCellsCoordinates.contains(position)) {
-                    collection.getCellOnPosition(position).setValue(0);
-                    collection.getCellOnPosition(position).setEditable(true);
-                } else
-                    collection.getCellOnPosition(position).setEditable(false);
-            }
+        for (final Position position : new AllPositionsInGrid()) {
+            if (emptyCellsCoordinates.contains(position)) {
+                collection.getCellOnPosition(position).setValue(0);
+                collection.getCellOnPosition(position).setEditable(true);
+            } else
+                collection.getCellOnPosition(position).setEditable(false);
         }
     }
 
@@ -176,17 +168,14 @@ public class SudokuPuzzle {
         removeRandomCoordinateFromEmptyCells();
         addRandomCoordinateToEmptyCells();
 
-        for (int row = 0; row < GridSettings.GRID_SIZE; row++) {
-            for (int col = 0; col < GridSettings.GRID_SIZE; col++) {
-                final Position position = new Position(row, col);
-                if (!emptyCellsCoordinates.contains(position)) {
-                    collection.getCellOnPosition(position).getPossibleValues().clear();
-                    collection.getCellOnPosition(position).setValue(solvedCellsBackup[row][col].getValue());
-                    collection.getCellOnPosition(position).getPossibleValues().add(solvedCellsBackup[row][col].getValue());
-                } else {
-                    collection.getCellOnPosition(position).getPossibleValues().clear();
-                    collection.getCellOnPosition(position).setValue(0);
-                }
+        for (final Position position : new AllPositionsInGrid()) {
+            if (!emptyCellsCoordinates.contains(position)) {
+                collection.getCellOnPosition(position).getPossibleValues().clear();
+                collection.getCellOnPosition(position).setValue(solvedCellsBackup[position.getRow()][position.getColumn()].getValue());
+                collection.getCellOnPosition(position).getPossibleValues().add(solvedCellsBackup[position.getRow()][position.getColumn()].getValue());
+            } else {
+                collection.getCellOnPosition(position).getPossibleValues().clear();
+                collection.getCellOnPosition(position).setValue(0);
             }
         }
     }
@@ -280,13 +269,10 @@ public class SudokuPuzzle {
     }
 
     public Cell[][] resetPuzzle() {
-        for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
-            for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-                final Position position = new Position(r, c);
-                Cell cell = collection.getCellOnPosition(position);
-                cell = cells_backup[r][c];
-                reloadCells();
-            }
+        for (final Position position : new AllPositionsInGrid()) {
+            Cell cell = collection.getCellOnPosition(position);
+            cell = cells_backup[position.getRow()][position.getColumn()];
+            reloadCells();
         }
         return collection.getCells();
     }
