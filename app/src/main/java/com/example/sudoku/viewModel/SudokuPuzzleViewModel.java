@@ -1,17 +1,17 @@
 package com.example.sudoku.viewModel;
-
 import com.example.sudoku.com.example.sudoku.model.Cell;
-import com.example.sudoku.com.example.sudoku.model.CellCollection;
+import com.example.sudoku.com.example.sudoku.model.SudokuPuzzle;
 
 public class SudokuPuzzleViewModel {
 
     private int currentPositionR;
     private int currentPositionC;
-    private CellCollection model;
+    private SudokuPuzzle model;
     private Cell[][] cells;
 
     public SudokuPuzzleViewModel() {
-        model = CellCollection.createEmptyGrid();
+        model = new SudokuPuzzle();
+        cells = model.getCells();
     }
 
     public void setCurrentPosition(int r, int c) {
@@ -37,7 +37,7 @@ public class SudokuPuzzleViewModel {
     }
 
     public void setValueOnCurrentPosition(int number) {
-        model.getCellOnPosition(currentPositionR, currentPositionC).setValue(number);
+        cells[currentPositionR][currentPositionC].setValue(number);
     }
 
     public int[] getCurrentPosition() {
