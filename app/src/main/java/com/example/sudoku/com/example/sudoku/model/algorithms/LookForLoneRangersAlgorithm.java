@@ -17,10 +17,10 @@ public class LookForLoneRangersAlgorithm extends AlgorithmProcessor {
         int occurrence;
         Cell cellToChange = null;
 
-        for (CellGroup row : group) {
+        for (CellGroup cellGroup : group) {
             for (int n = 1; n <= GridSettings.GRID_SIZE; n++) {
                 occurrence = 0;
-                for (Cell cell : row.getCells()) {
+                for (Cell cell : cellGroup.getCells()) {
 
                     if (cell.getValue() == 0 && cell.checkIfContainsPossibleValue(n)) {
                         occurrence += 1;

@@ -16,14 +16,14 @@ public class LookForTripletsAlgorithm extends AlgorithmProcessor {
 
     private boolean lookForTripletsInGroups(CellGroup[] groups) throws Exception {
         boolean changes = false;
-        for (CellGroup column : groups) {
-            Cell[] columnCells = column.getCells();
-            for (Cell cell : columnCells) {
+        for (CellGroup cellGroup : groups) {
+            Cell[] cells = cellGroup.getCells();
+            for (Cell cell : cells) {
                 if (cell.getValue() == 0 && cell.getPossibleValuesCount() == 3) {
                     List<Cell> selectedCells = new ArrayList<>();
                     selectedCells.add(cell);
 
-                    for (Cell cellSecond : columnCells) {
+                    for (Cell cellSecond : cells) {
                         if (cell != cellSecond
                                 && (cell.checkIfPossibleValueListIsTheSame(cellSecond.getPossibleValues())
                                 || cellSecond.getPossibleValuesCount() == 2
@@ -33,7 +33,7 @@ public class LookForTripletsAlgorithm extends AlgorithmProcessor {
                     }
 
                     if (selectedCells.size() == 3) {
-                        for (Cell cellThird : columnCells) {
+                        for (Cell cellThird : cells) {
                             if (cellThird.getValue() == 0
                                     && cellThird != selectedCells.get(0)
                                     && cellThird != selectedCells.get(1)

@@ -14,8 +14,8 @@ public class LookForTwinsAlgorithm extends AlgorithmProcessor {
     private boolean lookForTwinsInGroups(CellGroup[] groups) throws Exception {
         boolean changes = false;
 
-        for (CellGroup row : groups) {
-            Cell[] cells = row.getCells();
+        for (CellGroup cellGroup : groups) {
+            Cell[] cells = cellGroup.getCells();
             for (Cell cell : cells) {
                 if (cell.getValue() == 0 && cell.getPossibleValuesCount() == 2) {
                     for (Cell cellTwo : cells) {

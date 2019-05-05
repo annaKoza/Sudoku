@@ -13,16 +13,16 @@ public final class CheckColumnsAndRowsAlgorithm extends AlgorithmProcessor {
 
     private boolean checkColumnAndRowsInGroups(CellGroup[] group) throws Exception {
         boolean changes = false;
-        for (CellGroup rows : group) {
-            for (Cell element : rows.getCells()) {
-                if (element.getValue() == 0) {
+        for (CellGroup cellGroup : group) {
+            for (Cell cell : cellGroup.getCells()) {
+                if (cell.getValue() == 0) {
                     try {
-                        element.calculatePossibleValues();
+                        cell.calculatePossibleValues();
                     } catch (Exception ex) {
                         throw new Exception(ex.getMessage());
                     }
 
-                    if (element.updateValueIfReady()) {
+                    if (cell.updateValueIfReady()) {
                         changes = true;
                         counter.addToScore(1);
                     }
