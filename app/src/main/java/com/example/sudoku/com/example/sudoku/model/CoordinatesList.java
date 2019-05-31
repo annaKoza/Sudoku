@@ -10,20 +10,20 @@ class CoordinatesList {
         coordinates = new HashMap<>();
     }
 
-    void addCoordinate(int r, int c) {
-        String value = String.format("%d%d", r, c);
-        coordinates.putIfAbsent(value, new int[]{r, c});
+    void addCoordinate(final Position position) {
+        String value = String.format("%d%d", position.getRow(), position.getColumn());
+        coordinates.putIfAbsent(value, new int[]{position.getRow(), position.getColumn()});
     }
 
-    boolean removeCoordinate(int r, int c) {
-        String value = String.format("%d%d", r, c);
+    boolean removeCoordinate(final Position position) {
+        String value = String.format("%d%d", position.getRow(), position.getColumn());
         if (!coordinates.containsKey(value))
             return false;
         coordinates.remove(value);
         return true;
     }
 
-    boolean contains(int r, int c) {
-        return coordinates.containsKey(String.format("%d%d", r, c));
+    boolean contains(final Position position) {
+        return coordinates.containsKey(String.format("%d%d", position.getRow(), position.getColumn()));
     }
 }

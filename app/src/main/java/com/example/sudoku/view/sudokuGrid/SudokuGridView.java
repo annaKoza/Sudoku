@@ -13,6 +13,7 @@ import android.widget.GridView;
 
 import com.example.sudoku.com.example.sudoku.model.Cell;
 import com.example.sudoku.com.example.sudoku.model.GridSettings;
+import com.example.sudoku.com.example.sudoku.model.Position;
 import com.example.sudoku.viewModel.SudokuPuzzleViewModel;
 
 import java.util.List;
@@ -176,8 +177,8 @@ public class SudokuGridView extends GridView{
 		}
 		List<Cell> invalidCells = model.getInvalidCells();
 		for (Cell cell : invalidCells) {
-			int[] position = cell.getPosition();
-			sudoku[position[1]][position[0]].setIsValid(false);
+			final Position position = cell.getPosition();
+			sudoku[position.getRow()][position.getColumn()].setIsValid(false);
 		}
 	}
 
