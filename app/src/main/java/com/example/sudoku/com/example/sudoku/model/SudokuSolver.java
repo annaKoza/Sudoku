@@ -71,20 +71,14 @@ class SudokuSolver {
     }
 
     private void LoadCellsState() {
-        for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-            for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
-                final Position position = new Position(r, c);
-                collection.getCellOnPosition(position).LoadState();
-            }
+        for (final Position position : new AllPositionsInGrid()) {
+            collection.getCellOnPosition(position).LoadState();
         }
     }
 
     private void SaveCellsState() {
-        for (int c = 0; c < GridSettings.GRID_SIZE; c++) {
-            for (int r = 0; r < GridSettings.GRID_SIZE; r++) {
-                final Position position = new Position(r, c);
-                collection.getCellOnPosition(position).SaveState();
-            }
+        for (final Position position : new AllPositionsInGrid()) {
+            collection.getCellOnPosition(position).SaveState();
         }
     }
 }
